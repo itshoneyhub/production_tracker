@@ -15,6 +15,7 @@ const ProjectList = () => {
     remarks: '',
   });
   const [editingId, setEditingId] = useState(null);
+  const [editedStage, setEditedStage] = useState('');
   const [filter, setFilter] = useState('All');
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
@@ -54,12 +55,16 @@ const ProjectList = () => {
     e.preventDefault();
 
     if (editingId) {
-      const updatedProjects = projects.map((project) =>
-        project.id === editingId ? { ...formData, id: editingId } : project
-      );
-      setProjects(updatedProjects);
-      localStorage.setItem('projects', JSON.stringify(updatedProjects));
-      setEditingId(null);
+      const confirmUpdate = window.confirm("Are you sure you want to update this project's production stage?");
+      if (confirmUpdate) {
+        const updatedProjects = projects.map((project) =>
+          project.id === editingId ? { ...project, productionStage: editedStage } : project
+        );
+        setProjects(updatedProjects);
+        localStorage.setItem('projects', JSON.stringify(updatedProjects));
+        setEditingId(null);
+        setEditedStage('');
+      }
     } else {
       const newProject = { ...formData, id: self.crypto.randomUUID() };
       const updatedProjects = [...projects, newProject];
@@ -79,6 +84,7 @@ const ProjectList = () => {
 
   const handleEdit = (project) => {
     setEditingId(project.id);
+    setEditedStage(project.productionStage); // Set the stage for editing
     setFormData({
         ...project,
         projectDate: new Date(project.projectDate),
@@ -94,6 +100,7 @@ const ProjectList = () => {
   
   const handleCancel = () => {
     setEditingId(null);
+    setEditedStage(''); // Reset edited stage
     setFormData({
         projectNo: '',
         customerName: '',
@@ -231,11 +238,35 @@ const ProjectList = () => {
                 <td data-label="Customer Name">{project.customerName}</td>
                 <td data-label="Project Date">{new Date(project.projectDate).toLocaleDateString()}</td>
                 <td data-label="Target Date">{new Date(project.targetDate).toLocaleDateString()}</td>
-                <td data-label="Production Stage">{project.productionStage}</td>
+                <td data-label="Production Stage">
+                  {editingId === project.id ? (
+                    <select
+                      value={editedStage}
+                      onChange={(e) => setEditedStage(e.target.value)}
+                    >
+                      {stages.map((stage) => (
+                        <option key={stage.id} value={stage.name}>
+                          {stage.name}
+                        </option>
+                      ))}
+                    </select>
+                  ) : (
+                    project.productionStage
+                  )}
+                </td>
                 <td data-label="Remarks">{project.remarks}</td>
                 <td data-label="Actions" className="actions">
-                  <button onClick={() => handleEdit(project)}>Edit</button>
-                  <button className="delete" onClick={() => handleDelete(project.id)}>Delete</button>
+                  {editingId === project.id ? (
+                    <>
+                      <button onClick={handleSubmit}>Save</button>
+                      <button className="cancel" onClick={handleCancel}>Cancel</button>
+                    </>
+                  ) : (
+                    <>
+                      <button onClick={() => handleEdit(project)}>Edit</button>
+                      <button className="delete" onClick={() => handleDelete(project.id)}>Delete</button>
+                    </>
+                  )}
                 </td>
               </tr>
             ))}
