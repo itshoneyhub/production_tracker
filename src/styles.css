@@ -258,7 +258,13 @@ td.actions {
 
 .date-filters {
     display: flex;
+    flex-direction: column; /* Stack date filters vertically */
+    width: 100%; /* Full width */
     gap: 10px;
+}
+
+.react-datepicker-wrapper, .react-datepicker__input-container {
+    width: 100%; /* Ensure date pickers take full width */
 }
 
 /* Dashboard metrics */
@@ -346,7 +352,16 @@ td.actions button {
   }
 
   .filter-buttons {
-    flex-wrap: wrap; /* Allow filter buttons to wrap */
+    display: flex;
+    gap: 10px;
+    overflow-x: auto; /* Enable horizontal scrolling */
+    -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+    padding-bottom: 5px; /* Add some padding for scrollbar */
+  }
+
+  .filter-buttons button {
+    flex-shrink: 0; /* Prevent buttons from shrinking */
+    min-width: fit-content; /* Ensure buttons take content width */
   }
 
   .table-container {
@@ -401,16 +416,16 @@ td.actions button {
   }
 
   td.actions {
-    text-align: left; /* Adjust alignment for action buttons */
+    text-align: center; /* Center action buttons */
     padding-left: 10px;
-    display: flex; /* Use flexbox for action buttons */
-    flex-wrap: wrap; /* Allow buttons to wrap */
-    gap: 5px; /* Space between buttons */
+    display: flex;
+    flex-direction: column; /* Stack buttons vertically */
+    gap: 5px;
   }
 
   td.actions button {
-    flex-grow: 1; /* Allow buttons to grow and fill space */
-    min-width: 80px; /* Minimum width for buttons */
+    width: 100%; /* Full width buttons */
+    min-width: unset; /* Remove min-width constraint */
   }
 }
 
