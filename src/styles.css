@@ -382,16 +382,17 @@ td.actions button {
 
   table td {
     text-align: right; /* Align content to the right */
-    padding: 10px 10px 10px 50%; /* Adjust padding for labels */
+    padding: 10px 10px 10px 45%; /* Adjusted padding for labels */
     position: relative;
     border-bottom: 1px solid #eee; /* Add a subtle border between cells */
+    overflow-wrap: break-word; /* Allow long words to break and wrap */
   }
 
   table td::before {
     content: attr(data-label); /* Use data-label for column names */
     position: absolute;
     left: 10px;
-    width: calc(50% - 20px); /* Adjust width for padding */
+    width: calc(40% - 20px); /* Reduced width for labels */
     padding-right: 10px;
     white-space: nowrap;
     text-align: left;
