@@ -108,7 +108,7 @@ const Dashboard = () => {
             <YAxis />
             <Tooltip />
             <Legend />
-            <Bar dataKey="count" fill="#8884d8" onClick={(data) => handleCardClick(data.name)} />
+            <Bar dataKey="count" fill="#8884d8" barSize={40} onClick={(data) => handleCardClick(data.name)} />
           </BarChart>
         </ResponsiveContainer>
       </div>

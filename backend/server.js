@@ -18,7 +18,8 @@ const config = {
   database: process.env.DB_DATABASE || 'productionTrackerdb',
   options: {
     encrypt: false, // Use true for Azure SQL Database, false for local SQL Server
-    trustServerCertificate: true // Change to true for local dev / self-signed certs
+    trustServerCertificate: true, // Change to true for local dev / self-signed certs
+    port: 1433 // Explicitly set port to 1433
   }
 };
 
