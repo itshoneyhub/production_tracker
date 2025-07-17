@@ -197,22 +197,32 @@ const ProjectList = () => {
             ))}
         </div>
         <div className="date-filters">
-            <DatePicker
-                selected={startDate}
-                onChange={(date) => setStartDate(date)}
-                selectsStart
-                startDate={startDate}
-                endDate={endDate}
-                placeholderText="Start Date"
-            />
-            <DatePicker
-                selected={endDate}
-                onChange={(date) => setEndDate(date)}
-                selectsEnd
-                startDate={startDate}
-                endDate={endDate}
-                placeholderText="End Date"
-            />
+            <div className="date-filter-group">
+                <label htmlFor="startDate">From:</label>
+                <DatePicker
+                    id="startDate"
+                    selected={startDate}
+                    onChange={(date) => setStartDate(date)}
+                    selectsStart
+                    startDate={startDate}
+                    endDate={endDate}
+                    placeholderText="Start Date"
+                    className="date-picker-input"
+                />
+            </div>
+            <div className="date-filter-group">
+                <label htmlFor="endDate">To:</label>
+                <DatePicker
+                    id="endDate"
+                    selected={endDate}
+                    onChange={(date) => setEndDate(date)}
+                    selectsEnd
+                    startDate={startDate}
+                    endDate={endDate}
+                    placeholderText="End Date"
+                    className="date-picker-input"
+                />
+            </div>
         </div>
       </div>
 

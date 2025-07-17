@@ -1,3 +1,5 @@
+@import url('./pages/Login.css');
+
 body {
   margin: 0;
   font-family: sans-serif; /* Default fallback */
@@ -255,20 +257,52 @@ td.actions {
 }
 
 .date-filters {
-    .date-filters {
     display: flex;
-    flex-direction: column; /* Stack date filters vertically */
-    width: 100%; /* Full width */
-    gap: 10px;
-  }
-
-  .react-datepicker-wrapper, .react-datepicker__input-container {
-    width: 100%; /* Ensure date pickers take full width */
-  }
+    gap: 10px; /* Space between date pickers */
+    align-items: center; /* Align items vertically */
 }
 
-.react-datepicker-wrapper, .react-datepicker__input-container {
-    width: 100%; /* Ensure date pickers take full width */
+.date-filter-group {
+    display: flex;
+    align-items: center;
+    gap: 5px; /* Space between label and date picker */
+}
+
+.date-filter-group label {
+    font-weight: 500;
+    color: #333;
+}
+
+.date-picker-input {
+    padding: 8px 12px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 14px;
+    transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.date-picker-input:focus {
+    outline: none;
+    border-color: #007bff;
+    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25);
+}
+
+/* Responsive adjustments for date filters */
+@media (max-width: 768px) {
+  .date-filters {
+    flex-direction: column; /* Stack date filters vertically */
+    width: 100%; /* Full width */
+    gap: 15px; /* More space when stacked */
+  }
+
+  .date-filter-group {
+    width: 100%; /* Full width for each date filter group */
+    justify-content: space-between; /* Space out label and input */
+  }
+
+  .date-picker-input {
+    width: calc(100% - 60px); /* Adjust width to account for label */
+  }
 }
 
 /* Dashboard metrics */

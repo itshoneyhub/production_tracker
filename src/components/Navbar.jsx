@@ -1,7 +1,7 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
 
-const Navbar = () => {
+const Navbar = ({ onLogout }) => {
   return (
     <nav className="navbar">
       <div className="container">
@@ -18,6 +18,9 @@ const Navbar = () => {
             </li>
             <li>
               <NavLink to="/import-export">Import/Export</NavLink>
+            </li>
+            <li>
+              <button onClick={onLogout} className="logout-button">Logout</button>
             </li>
           </ul>
         </div>
