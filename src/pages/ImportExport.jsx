@@ -4,7 +4,7 @@ import { PublicClientApplication } from '@azure/msal-browser';
 import { msalConfig, loginRequest } from '../authConfig';
 import { Client } from '@microsoft/microsoft-graph-client';
 
-const ImportExport = () => {
+const ImportExport = ({ showAlert }) => {
   const [message, setMessage] = useState(null);
   const [msalInstance] = useState(new PublicClientApplication(msalConfig));
   const [graphClient, setGraphClient] = useState(null);
@@ -24,10 +24,10 @@ const ImportExport = () => {
         },
       });
       setGraphClient(client);
-      setMessage({ type: 'success', text: 'Logged in successfully!' });
+      showAlert('Logged in successfully!', 'success');
     } catch (error) {
       console.error("Login Error:", error);
-      setMessage({ type: 'error', text: 'Login failed. Please try again. Check the console for details.' });
+      showAlert('Login failed. Please try again. Check the console for details.', 'error');
     }
   };
 
@@ -37,11 +37,11 @@ const ImportExport = () => {
 
   const handleImportFromTeams = async () => {
     if (!graphClient) {
-      setMessage({ type: 'error', text: 'Please log in first.' });
+      showAlert('Please log in first.', 'error');
       return;
     }
     if (!fileLink) {
-      setMessage({ type: 'error', text: 'Please provide a file link.' });
+      showAlert('Please provide a file link.', 'error');
       return;
     }
 
@@ -60,7 +60,7 @@ const ImportExport = () => {
         const jsonData = workbook.values;
 
       if (jsonData.length < 2) {
-        setMessage({ type: 'error', text: 'The file is empty.' });
+        showAlert('The file is empty.', 'error');
         return;
       }
 
@@ -77,11 +77,11 @@ const ImportExport = () => {
       const mergedProjects = [...existingProjects, ...importedProjects.map(p => ({...p, id: self.crypto.randomUUID()}))];
       localStorage.setItem('projects', JSON.stringify(mergedProjects));
 
-      setMessage({ type: 'success', text: 'Projects imported successfully!' });
+      showAlert('Projects imported successfully!', 'success');
       window.dispatchEvent(new Event('storage'));
     } catch (error) {
       console.error("Import from Teams Error:", error);
-      setMessage({ type: 'error', text: 'Error importing file from Teams. Check console for details.' });
+      showAlert('Error importing file from Teams. Check console for details.', 'error');
     }
   };
 
@@ -102,7 +102,10 @@ const ImportExport = () => {
 
   const handleImport = (e) => {
     const file = e.target.files[0];
-    if (!file) return;
+    if (!file) {
+      showAlert('No file selected.', 'info');
+      return;
+    }
 
     const reader = new FileReader();
     reader.onload = (event) => {
@@ -114,7 +117,7 @@ const ImportExport = () => {
         const jsonData = XLSX.utils.sheet_to_json(worksheet, { cellDates: true });
 
         if (jsonData.length === 0) {
-          setMessage({ type: 'error', text: 'The file is empty or has no data.' });
+          showAlert('The file is empty or has no data.', 'error');
           return;
         }
 
@@ -132,11 +135,11 @@ const ImportExport = () => {
         const mergedProjects = [...existingProjects, ...importedProjects];
         localStorage.setItem('projects', JSON.stringify(mergedProjects));
 
-        setMessage({ type: 'success', text: 'Projects imported successfully!' });
+        showAlert('Projects imported successfully!', 'success');
         window.dispatchEvent(new Event('storage'));
       } catch (error) {
         console.error("Import Error:", error);
-        setMessage({ type: 'error', text: 'Error importing file. Please check the file format and data.' });
+        showAlert('Error importing file. Please check the file format and data.', 'error');
       }
     };
     reader.readAsArrayBuffer(file);
@@ -145,11 +148,6 @@ const ImportExport = () => {
   return (
     <div className="page-container">
       <h2>Import/Export</h2>
-      {message && (
-        <div className={`message ${message.type}`}>
-          {message.text}
-        </div>
-      )}
       <div className="import-export-container">
         <div className="export-section">
           <h3>Export Template</h3>

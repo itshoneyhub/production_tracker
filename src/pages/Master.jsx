@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 
-const Master = () => {
+const Master = ({ showAlert }) => {
   const [stages, setStages] = useState([]);
   const [stageName, setStageName] = useState('');
   const [remarks, setRemarks] = useState('');
@@ -36,6 +36,7 @@ const Master = () => {
       setStages(updatedStages);
       localStorage.setItem('stages', JSON.stringify(updatedStages));
       setEditingId(null);
+      showAlert('Stage updated successfully!', 'success');
     } else {
       // Add new stage
       const newStage = {
@@ -46,6 +47,7 @@ const Master = () => {
       const updatedStages = [...stages, newStage];
       setStages(updatedStages);
       localStorage.setItem('stages', JSON.stringify(updatedStages));
+      showAlert('Stage created successfully!', 'success');
     }
 
     setStageName('');
@@ -59,9 +61,13 @@ const Master = () => {
   };
 
   const handleDelete = (id) => {
-    const updatedStages = stages.filter((stage) => stage.id !== id);
-    setStages(updatedStages);
-    localStorage.setItem('stages', JSON.stringify(updatedStages));
+    const confirmDelete = window.confirm("Are you sure you want to delete this stage?");
+    if (confirmDelete) {
+      const updatedStages = stages.filter((stage) => stage.id !== id);
+      setStages(updatedStages);
+      localStorage.setItem('stages', JSON.stringify(updatedStages));
+      showAlert('Stage deleted successfully!', 'success');
+    }
   };
   
   const handleCancel = () => {

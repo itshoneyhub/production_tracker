@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './Login.css'; // Import the CSS for the login page
 
-const LoginPage = ({ onLogin }) => {
+const LoginPage = ({ onLogin, showAlert }) => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -18,9 +18,11 @@ const LoginPage = ({ onLogin }) => {
 
     if (isValidUsername && isValidPassword) {
       onLogin(); // Call the onLogin function passed from App.jsx
+      // showAlert('Login Successful!', 'success'); // Alert handled in App.jsx
       navigate('/'); // Redirect to dashboard or home page
     } else {
       setError('Invalid ID or Password');
+      showAlert('Invalid ID or Password', 'error');
     }
   };
 

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 
-const ProjectList = () => {
+const ProjectList = ({ showAlert }) => {
   const [projects, setProjects] = useState([]);
   const [filteredProjects, setFilteredProjects] = useState([]);
   const [stages, setStages] = useState([]);
@@ -64,12 +64,14 @@ const ProjectList = () => {
         localStorage.setItem('projects', JSON.stringify(updatedProjects));
         setEditingId(null);
         setEditedStage('');
+        showAlert('Project updated successfully!', 'success');
       }
     } else {
       const newProject = { ...formData, id: self.crypto.randomUUID() };
       const updatedProjects = [...projects, newProject];
       setProjects(updatedProjects);
       localStorage.setItem('projects', JSON.stringify(updatedProjects));
+      showAlert('Project created successfully!', 'success');
     }
 
     setFormData({
@@ -93,9 +95,13 @@ const ProjectList = () => {
   };
 
   const handleDelete = (id) => {
-    const updatedProjects = projects.filter((project) => project.id !== id);
-    setProjects(updatedProjects);
-    localStorage.setItem('projects', JSON.stringify(updatedProjects));
+    const confirmDelete = window.confirm("Are you sure you want to delete this project?");
+    if (confirmDelete) {
+      const updatedProjects = projects.filter((project) => project.id !== id);
+      setProjects(updatedProjects);
+      localStorage.setItem('projects', JSON.stringify(updatedProjects));
+      showAlert('Project deleted successfully!', 'success');
+    }
   };
   
   const handleCancel = () => {
