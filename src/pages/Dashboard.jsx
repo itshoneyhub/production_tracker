@@ -1,29 +1,42 @@
 import React, { useState, useEffect } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 
+const API_BASE_URL = 'http://localhost:5000/api'; // Your backend API base URL
+
 const Dashboard = () => {
   const [projects, setProjects] = useState([]);
   const [stages, setStages] = useState([]);
   const [selectedStage, setSelectedStage] = useState(null);
 
   useEffect(() => {
-    const storedProjects = JSON.parse(localStorage.getItem('projects')) || [];
-    setProjects(storedProjects);
-    const storedStages = JSON.parse(localStorage.getItem('stages')) || [];
-    setStages(storedStages.map(s => ({...s, name: s.name.trim()})));
-
-    const handleStorageChange = () => {
-        const storedProjects = JSON.parse(localStorage.getItem('projects')) || [];
-        setProjects(storedProjects);
-        const storedStages = JSON.parse(localStorage.getItem('stages')) || [];
-        setStages(storedStages.map(s => ({...s, name: s.name.trim()})));
+    const fetchProjects = async () => {
+      try {
+        const response = await fetch(`${API_BASE_URL}/projects`);
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data = await response.json();
+        setProjects(data);
+      } catch (error) {
+        console.error("Error fetching projects:", error);
+      }
     };
 
-    window.addEventListener('storage', handleStorageChange);
-
-    return () => {
-        window.removeEventListener('storage', handleStorageChange);
+    const fetchStages = async () => {
+      try {
+        const response = await fetch(`${API_BASE_URL}/stages`);
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data = await response.json();
+        setStages(data.map(s => ({...s, name: s.name.trim()})));
+      } catch (error) {
+        console.error("Error fetching stages:", error);
+      }
     };
+
+    fetchProjects();
+    fetchStages();
   }, []);
 
   const getStageCount = (stageName) => {

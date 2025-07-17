@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 
+const API_BASE_URL = 'http://localhost:5000/api'; // Your backend API base URL
+
 const Master = ({ showAlert }) => {
   const [stages, setStages] = useState([]);
   const [stageName, setStageName] = useState('');
@@ -7,51 +9,74 @@ const Master = ({ showAlert }) => {
   const [editingId, setEditingId] = useState(null);
 
   useEffect(() => {
-    const storedStages = JSON.parse(localStorage.getItem('stages'));
-    if (storedStages && storedStages.length > 0) {
-      setStages(storedStages);
-    } else {
-      const defaultStages = [
-        { id: self.crypto.randomUUID(), name: 'HOLD from Team', remarks: '' },
-        { id: self.crypto.randomUUID(), name: 'Under Manufacturing', remarks: '' },
-        { id: self.crypto.randomUUID(), name: 'Ready for Internal FAT', remarks: '' },
-        { id: self.crypto.randomUUID(), name: 'Ready for Client FAT', remarks: '' },
-        { id: self.crypto.randomUUID(), name: 'Ready for Dispatch', remarks: '' },
-        { id: self.crypto.randomUUID(), name: 'Dispatched', remarks: '' },
-      ];
-      setStages(defaultStages);
-      localStorage.setItem('stages', JSON.stringify(defaultStages));
-    }
-  }, []);
+    const fetchStages = async () => {
+      try {
+        const response = await fetch(`${API_BASE_URL}/stages`);
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data = await response.json();
+        setStages(data);
+      } catch (error) {
+        console.error("Error fetching stages:", error);
+        showAlert('Error fetching stages.', 'error');
+      }
+    };
 
-  const handleSubmit = (e) => {
+    fetchStages();
+  }, [showAlert]);
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!stageName) return;
 
-    if (editingId) {
-      // Update existing stage
-      const updatedStages = stages.map((stage) =>
-        stage.id === editingId ? { ...stage, name: stageName.trim(), remarks } : stage
-      );
-      setStages(updatedStages);
-      localStorage.setItem('stages', JSON.stringify(updatedStages));
-      setEditingId(null);
-      showAlert('Stage updated successfully!', 'success');
-    } else {
-      // Add new stage
-      const newStage = {
-        id: self.crypto.randomUUID(),
-        name: stageName.trim(),
-        remarks,
-      };
-      const updatedStages = [...stages, newStage];
-      setStages(updatedStages);
-      localStorage.setItem('stages', JSON.stringify(updatedStages));
-      showAlert('Stage created successfully!', 'success');
-    }
+    try {
+      if (editingId) {
+        // Update existing stage
+        const response = await fetch(`${API_BASE_URL}/stages/${editingId}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ name: stageName.trim(), remarks }),
+        });
 
-    setStageName('');
-    setRemarks('');
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        setStages(stages.map((stage) =>
+          stage.id === editingId ? { ...stage, name: stageName.trim(), remarks } : stage
+        ));
+        setEditingId(null);
+        showAlert('Stage updated successfully!', 'success');
+      } else {
+        // Add new stage
+        const newStage = {
+          id: self.crypto.randomUUID(),
+          name: stageName.trim(),
+          remarks,
+        };
+        const response = await fetch(`${API_BASE_URL}/stages`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(newStage),
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        setStages([...stages, newStage]);
+        showAlert('Stage created successfully!', 'success');
+      }
+
+      setStageName('');
+      setRemarks('');
+    } catch (error) {
+      console.error("Error saving stage:", error);
+      showAlert('Error saving stage.', 'error');
+    }
   };
 
   const handleEdit = (stage) => {
@@ -60,13 +85,23 @@ const Master = ({ showAlert }) => {
     setRemarks(stage.remarks);
   };
 
-  const handleDelete = (id) => {
+  const handleDelete = async (id) => {
     const confirmDelete = window.confirm("Are you sure you want to delete this stage?");
     if (confirmDelete) {
-      const updatedStages = stages.filter((stage) => stage.id !== id);
-      setStages(updatedStages);
-      localStorage.setItem('stages', JSON.stringify(updatedStages));
-      showAlert('Stage deleted successfully!', 'success');
+      try {
+        const response = await fetch(`${API_BASE_URL}/stages/${id}`, {
+          method: 'DELETE',
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        setStages(stages.filter((stage) => stage.id !== id));
+        showAlert('Stage deleted successfully!', 'success');
+      } catch (error) {
+        console.error("Error deleting stage:", error);
+        showAlert('Error deleting stage.', 'error');
+      }
     }
   };
   

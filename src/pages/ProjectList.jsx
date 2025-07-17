@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 
+const API_BASE_URL = 'http://localhost:5000/api'; // Your backend API base URL
+
 const ProjectList = ({ showAlert }) => {
   const [projects, setProjects] = useState([]);
   const [filteredProjects, setFilteredProjects] = useState([]);
@@ -21,12 +23,38 @@ const ProjectList = ({ showAlert }) => {
   const [endDate, setEndDate] = useState(null);
 
   useEffect(() => {
-    const storedProjects = JSON.parse(localStorage.getItem('projects')) || [];
-    setProjects(storedProjects);
-    setFilteredProjects(storedProjects);
-    const storedStages = JSON.parse(localStorage.getItem('stages')) || [];
-    setStages(storedStages);
-  }, []);
+    const fetchProjects = async () => {
+      try {
+        const response = await fetch(`${API_BASE_URL}/projects`);
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data = await response.json();
+        setProjects(data);
+        setFilteredProjects(data);
+      } catch (error) {
+        console.error("Error fetching projects:", error);
+        showAlert('Error fetching projects.', 'error');
+      }
+    };
+
+    const fetchStages = async () => {
+      try {
+        const response = await fetch(`${API_BASE_URL}/stages`);
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data = await response.json();
+        setStages(data);
+      } catch (error) {
+        console.error("Error fetching stages:", error);
+        showAlert('Error fetching stages.', 'error');
+      }
+    };
+
+    fetchProjects();
+    fetchStages();
+  }, [showAlert]); // Depend on showAlert to avoid lint warnings
 
   useEffect(() => {
     let filtered = projects;
@@ -51,37 +79,64 @@ const ProjectList = ({ showAlert }) => {
     setFormData({ ...formData, [name]: date });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (editingId) {
-      const confirmUpdate = window.confirm("Are you sure you want to update this project's production stage?");
-      if (confirmUpdate) {
-        const updatedProjects = projects.map((project) =>
-          project.id === editingId ? { ...project, productionStage: editedStage } : project
-        );
-        setProjects(updatedProjects);
-        localStorage.setItem('projects', JSON.stringify(updatedProjects));
-        setEditingId(null);
-        setEditedStage('');
-        showAlert('Project updated successfully!', 'success');
-      }
-    } else {
-      const newProject = { ...formData, id: self.crypto.randomUUID() };
-      const updatedProjects = [...projects, newProject];
-      setProjects(updatedProjects);
-      localStorage.setItem('projects', JSON.stringify(updatedProjects));
-      showAlert('Project created successfully!', 'success');
-    }
+    try {
+      if (editingId) {
+        const confirmUpdate = window.confirm("Are you sure you want to update this project's production stage?");
+        if (confirmUpdate) {
+          const response = await fetch(`${API_BASE_URL}/projects/${editingId}`, {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ ...projects.find(p => p.id === editingId), productionStage: editedStage }),
+          });
 
-    setFormData({
-      projectNo: '',
-      customerName: '',
-      projectDate: new Date(),
-      targetDate: new Date(),
-      productionStage: '',
-      remarks: '',
-    });
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+          const updatedProjects = projects.map((project) =>
+            project.id === editingId ? { ...project, productionStage: editedStage } : project
+          );
+          setProjects(updatedProjects);
+          setFilteredProjects(updatedProjects);
+          setEditingId(null);
+          setEditedStage('');
+          showAlert('Project updated successfully!', 'success');
+        }
+      } else {
+        const newProject = { ...formData, id: self.crypto.randomUUID() };
+        const response = await fetch(`${API_BASE_URL}/projects`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(newProject),
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const updatedProjects = [...projects, newProject];
+        setProjects(updatedProjects);
+        setFilteredProjects(updatedProjects);
+        showAlert('Project created successfully!', 'success');
+      }
+
+      setFormData({
+        projectNo: '',
+        customerName: '',
+        projectDate: new Date(),
+        targetDate: new Date(),
+        productionStage: '',
+        remarks: '',
+      });
+    } catch (error) {
+      console.error("Error saving project:", error);
+      showAlert('Error saving project.', 'error');
+    }
   };
 
   const handleEdit = (project) => {
@@ -94,13 +149,25 @@ const ProjectList = ({ showAlert }) => {
     });
   };
 
-  const handleDelete = (id) => {
+  const handleDelete = async (id) => {
     const confirmDelete = window.confirm("Are you sure you want to delete this project?");
     if (confirmDelete) {
-      const updatedProjects = projects.filter((project) => project.id !== id);
-      setProjects(updatedProjects);
-      localStorage.setItem('projects', JSON.stringify(updatedProjects));
-      showAlert('Project deleted successfully!', 'success');
+      try {
+        const response = await fetch(`${API_BASE_URL}/projects/${id}`, {
+          method: 'DELETE',
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const updatedProjects = projects.filter((project) => project.id !== id);
+        setProjects(updatedProjects);
+        setFilteredProjects(updatedProjects);
+        showAlert('Project deleted successfully!', 'success');
+      } catch (error) {
+        console.error("Error deleting project:", error);
+        showAlert('Error deleting project.', 'error');
+      }
     }
   };
   
