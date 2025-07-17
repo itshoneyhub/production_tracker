@@ -11,9 +11,7 @@ const ProjectList = () => {
     customerName: '',
     projectDate: new Date(),
     targetDate: new Date(),
-    productionStart: new Date(),
     productionStage: '',
-    productionComplete: new Date(),
     remarks: '',
   });
   const [editingId, setEditingId] = useState(null);
@@ -74,9 +72,7 @@ const ProjectList = () => {
       customerName: '',
       projectDate: new Date(),
       targetDate: new Date(),
-      productionStart: new Date(),
       productionStage: '',
-      productionComplete: new Date(),
       remarks: '',
     });
   };
@@ -87,8 +83,6 @@ const ProjectList = () => {
         ...project,
         projectDate: new Date(project.projectDate),
         targetDate: new Date(project.targetDate),
-        productionStart: new Date(project.productionStart),
-        productionComplete: new Date(project.productionComplete),
     });
   };
 
@@ -105,9 +99,7 @@ const ProjectList = () => {
         customerName: '',
         projectDate: new Date(),
         targetDate: new Date(),
-        productionStart: new Date(),
         productionStage: '',
-        productionComplete: new Date(),
         remarks: '',
       });
   }
@@ -155,13 +147,6 @@ const ProjectList = () => {
                     />
                 </div>
                 <div className="form-group">
-                    <label>Production Start</label>
-                    <DatePicker
-                    selected={formData.productionStart}
-                    onChange={(date) => handleDateChange(date, 'productionStart')}
-                    />
-                </div>
-                <div className="form-group">
                     <label>Production Stage</label>
                     <select
                     name="productionStage"
@@ -176,13 +161,6 @@ const ProjectList = () => {
                         </option>
                     ))}
                     </select>
-                </div>
-                <div className="form-group">
-                    <label>Production Complete</label>
-                    <DatePicker
-                    selected={formData.productionComplete}
-                    onChange={(date) => handleDateChange(date, 'productionComplete')}
-                    />
                 </div>
                 <div className="form-group">
                     <label>Remarks</label>
@@ -240,9 +218,7 @@ const ProjectList = () => {
               <th className="customer-name-column">Customer Name</th>
               <th>Project Date</th>
               <th>Target Date</th>
-              <th>Production Start</th>
               <th>Production Stage</th>
-              <th>Production Complete</th>
               <th>Remarks</th>
               <th>Actions</th>
             </tr>
@@ -255,9 +231,7 @@ const ProjectList = () => {
                 <td data-label="Customer Name">{project.customerName}</td>
                 <td data-label="Project Date">{new Date(project.projectDate).toLocaleDateString()}</td>
                 <td data-label="Target Date">{new Date(project.targetDate).toLocaleDateString()}</td>
-                <td data-label="Production Start">{new Date(project.productionStart).toLocaleDateString()}</td>
                 <td data-label="Production Stage">{project.productionStage}</td>
-                <td data-label="Production Complete">{new Date(project.productionComplete).toLocaleDateString()}</td>
                 <td data-label="Remarks">{project.remarks}</td>
                 <td data-label="Actions" className="actions">
                   <button onClick={() => handleEdit(project)}>Edit</button>

@@ -91,9 +91,7 @@ const ImportExport = () => {
       'Customer Name',
       'Project Date',
       'Target Date',
-      'Production Start',
       'Production Stage',
-      'Production Complete',
       'Remarks',
     ];
     const ws = XLSX.utils.aoa_to_sheet([headers]);
@@ -126,9 +124,7 @@ const ImportExport = () => {
             customerName: row['Customer Name'] || '',
             projectDate: row['Project Date'] instanceof Date ? row['Project Date'] : new Date(),
             targetDate: row['Target Date'] instanceof Date ? row['Target Date'] : new Date(),
-            productionStart: row['Production Start'] instanceof Date ? row['Production Start'] : new Date(),
             productionStage: row['Production Stage'] || '',
-            productionComplete: row['Production Complete'] instanceof Date ? row['Production Complete'] : new Date(),
             remarks: row['Remarks'] || '',
         }));
 
