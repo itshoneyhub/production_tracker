@@ -114,10 +114,10 @@ const Master = () => {
           <tbody>
             {stages.map((stage, index) => (
               <tr key={stage.id}>
-                <td>{index + 1}</td>
-                <td>{stage.name}</td>
-                <td>{stage.remarks}</td>
-                <td className="actions">
+                <td data-label="Sr. No">{index + 1}</td>
+                <td data-label="Stage Name">{stage.name}</td>
+                <td data-label="Remarks">{stage.remarks}</td>
+                <td data-label="Actions" className="actions">
                   <button onClick={() => handleEdit(stage)}>Edit</button>
                   <button className="delete" onClick={() => handleDelete(stage.id)}>Delete</button>
                 </td>

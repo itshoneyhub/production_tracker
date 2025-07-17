@@ -250,16 +250,16 @@ const ProjectList = () => {
           <tbody>
             {filteredProjects.map((project, index) => (
               <tr key={project.id}>
-                <td>{index + 1}</td>
-                <td>{project.projectNo}</td>
-                <td>{project.customerName}</td>
-                <td>{new Date(project.projectDate).toLocaleDateString()}</td>
-                <td>{new Date(project.targetDate).toLocaleDateString()}</td>
-                <td>{new Date(project.productionStart).toLocaleDateString()}</td>
-                <td>{project.productionStage}</td>
-                <td>{new Date(project.productionComplete).toLocaleDateString()}</td>
-                <td>{project.remarks}</td>
-                <td className="actions">
+                <td data-label="Sr. No">{index + 1}</td>
+                <td data-label="Project No">{project.projectNo}</td>
+                <td data-label="Customer Name">{project.customerName}</td>
+                <td data-label="Project Date">{new Date(project.projectDate).toLocaleDateString()}</td>
+                <td data-label="Target Date">{new Date(project.targetDate).toLocaleDateString()}</td>
+                <td data-label="Production Start">{new Date(project.productionStart).toLocaleDateString()}</td>
+                <td data-label="Production Stage">{project.productionStage}</td>
+                <td data-label="Production Complete">{new Date(project.productionComplete).toLocaleDateString()}</td>
+                <td data-label="Remarks">{project.remarks}</td>
+                <td data-label="Actions" className="actions">
                   <button onClick={() => handleEdit(project)}>Edit</button>
                   <button className="delete" onClick={() => handleDelete(project.id)}>Delete</button>
                 </td>
