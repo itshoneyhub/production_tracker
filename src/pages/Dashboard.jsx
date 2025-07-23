@@ -1,32 +1,38 @@
 import React, { useState, useEffect } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import axios from 'axios'; // Import axios
+
+const API_BASE_URL = 'http://localhost:5000/api'; // Your backend API base URL
 
 const Dashboard = () => {
   const [projects, setProjects] = useState([]);
   const [stages, setStages] = useState([]);
   const [selectedStage, setSelectedStage] = useState(null);
 
-  // const API_BASE_URL = 'http://localhost:5000/api'; // Your backend API base URL
+  // Function to fetch projects from the backend
+  const fetchProjects = async () => {
+    try {
+      const response = await axios.get(`${API_BASE_URL}/projects`);
+      setProjects(response.data);
+    } catch (error) {
+      console.error('Error fetching projects:', error);
+    }
+  };
+
+  // Function to fetch stages from the backend
+  const fetchStages = async () => {
+    try {
+      const response = await axios.get(`${API_BASE_URL}/stages`);
+      setStages(response.data.map(s => ({...s, name: s.name.trim()})));
+    } catch (error) {
+      console.error('Error fetching stages:', error);
+    }
+  };
 
   useEffect(() => {
-    const storedProjects = JSON.parse(localStorage.getItem('projects')) || [];
-    setProjects(storedProjects);
-    const storedStages = JSON.parse(localStorage.getItem('stages')) || [];
-    setStages(storedStages.map(s => ({...s, name: s.name.trim()})));
-
-    const handleStorageChange = () => {
-        const storedProjects = JSON.parse(localStorage.getItem('projects')) || [];
-        setProjects(storedProjects);
-        const storedStages = JSON.parse(localStorage.getItem('stages')) || [];
-        setStages(storedStages.map(s => ({...s, name: s.name.trim()})));
-    };
-
-    window.addEventListener('storage', handleStorageChange);
-
-    return () => {
-        window.removeEventListener('storage', handleStorageChange);
-    };
-  }, []);
+    fetchProjects();
+    fetchStages();
+  }, []); // Fetch data on component mount
 
   const getStageCount = (stageName) => {
     return projects.filter((project) => project.productionStage.trim() === stageName).length;

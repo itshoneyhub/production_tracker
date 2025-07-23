@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
+import axios from 'axios'; // Import axios
+
+const API_BASE_URL = 'http://localhost:5000/api'; // Your backend API base URL
 
 const ProjectList = ({ showAlert }) => {
   const [projects, setProjects] = useState([]);
@@ -24,15 +27,33 @@ const ProjectList = ({ showAlert }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const recordsPerPage = 25;
 
-  // const API_BASE_URL = 'http://localhost:5000/api'; // Your backend API base URL
+  // Function to fetch projects from the backend
+  const fetchProjects = async () => {
+    try {
+      const response = await axios.get(`${API_BASE_URL}/projects`);
+      setProjects(response.data);
+      setFilteredProjects(response.data);
+    } catch (error) {
+      console.error('Error fetching projects:', error);
+      showAlert('Error fetching projects.', 'error');
+    }
+  };
+
+  // Function to fetch stages from the backend
+  const fetchStages = async () => {
+    try {
+      const response = await axios.get(`${API_BASE_URL}/stages`);
+      setStages(response.data);
+    } catch (error) {
+      console.error('Error fetching stages:', error);
+      showAlert('Error fetching stages.', 'error');
+    }
+  };
 
   useEffect(() => {
-    const storedProjects = JSON.parse(localStorage.getItem('projects')) || [];
-    setProjects(storedProjects);
-    setFilteredProjects(storedProjects);
-    const storedStages = JSON.parse(localStorage.getItem('stages')) || [];
-    setStages(storedStages);
-  }, []);
+    fetchProjects();
+    fetchStages();
+  }, []); // Fetch data on component mount
 
   useEffect(() => {
     let filtered = projects;
@@ -67,7 +88,7 @@ const ProjectList = ({ showAlert }) => {
     setFormData({ ...formData, [name]: date });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => { // Made async
     e.preventDefault();
 
     const projectNoTrimmed = formData.projectNo.trim();
@@ -86,14 +107,21 @@ const ProjectList = ({ showAlert }) => {
 
       const confirmUpdate = window.confirm("Are you sure you want to update this project?");
       if (confirmUpdate) {
-        const updatedProjects = projects.map((project) =>
-          project.id === editingId ? { ...project, ...formData, projectNo: projectNoTrimmed, productionStage: editedStage } : project
-        );
-        setProjects(updatedProjects);
-        localStorage.setItem('projects', JSON.stringify(updatedProjects));
-        setEditingId(null);
-        setEditedStage('');
-        showAlert('Project updated successfully!', 'success');
+        try {
+          await axios.put(`${API_BASE_URL}/projects/${editingId}`, { 
+            ...formData, 
+            projectNo: projectNoTrimmed, 
+            productionStage: editedStage // Use editedStage for update
+          });
+          showAlert('Project updated successfully!', 'success');
+          fetchProjects(); // Re-fetch projects to update the list
+        } catch (error) {
+          console.error('Error updating project:', error);
+          showAlert('Error updating project.', 'error');
+        } finally {
+          setEditingId(null);
+          setEditedStage('');
+        }
       }
     } else {
       // When adding, check all projects for duplicates
@@ -102,11 +130,14 @@ const ProjectList = ({ showAlert }) => {
         showAlert('Project is already available in the List.', 'error');
         return;
       }
-      const newProject = { ...formData, projectNo: projectNoTrimmed, id: self.crypto.randomUUID() };
-      const updatedProjects = [...projects, newProject];
-      setProjects(updatedProjects);
-      localStorage.setItem('projects', JSON.stringify(updatedProjects));
-      showAlert('Project created successfully!', 'success');
+      try {
+        await axios.post(`${API_BASE_URL}/projects`, { ...formData, projectNo: projectNoTrimmed });
+        showAlert('Project created successfully!', 'success');
+        fetchProjects(); // Re-fetch projects to update the list
+      } catch (error) {
+        console.error('Error creating project:', error);
+        showAlert('Error creating project.', 'error');
+      }
     }
 
     setFormData({
@@ -130,13 +161,17 @@ const ProjectList = ({ showAlert }) => {
     });
   };
 
-  const handleDelete = (id) => {
+  const handleDelete = async (id) => { // Made async
     const confirmDelete = window.confirm("Are you sure you want to delete this project?");
     if (confirmDelete) {
-      const updatedProjects = projects.filter((project) => project.id !== id);
-      setProjects(updatedProjects);
-      localStorage.setItem('projects', JSON.stringify(updatedProjects));
-      showAlert('Project deleted successfully!', 'success');
+      try {
+        await axios.delete(`${API_BASE_URL}/projects/${id}`);
+        showAlert('Project deleted successfully!', 'success');
+        fetchProjects(); // Re-fetch projects to update the list
+      } catch (error) {
+        console.error('Error deleting project:', error);
+        showAlert('Error deleting project.', 'error');
+      }
     }
   };
   
@@ -247,7 +282,7 @@ const ProjectList = ({ showAlert }) => {
                     />
                 </div>
             </div>
-          <div className="form-actions">
+          <div className="form-actions" style={{ justifyContent: 'flex-end' }}>
             {editingId ? (
               <>
                 <button type="submit">Save</button>

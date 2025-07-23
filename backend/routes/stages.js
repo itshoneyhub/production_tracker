@@ -1,11 +1,12 @@
 const express = require('express');
 const router = express.Router();
-const sql = require('mssql');
+const { getPool, sql } = require('../db');
+const { v4: uuidv4 } = require('uuid');
 
 // GET all stages
 router.get('/', async (req, res) => {
   try {
-    const pool = await sql.connect();
+    const pool = getPool();
     const result = await pool.request().query('SELECT * FROM Stages');
     res.json(result.recordset);
   } catch (err) {
@@ -16,7 +17,7 @@ router.get('/', async (req, res) => {
 // GET a single stage by ID
 router.get('/:id', async (req, res) => {
   try {
-    const pool = await sql.connect();
+    const pool = getPool();
     const result = await pool.request()
       .input('id', sql.NVarChar, req.params.id)
       .query('SELECT * FROM Stages WHERE id = @id');
@@ -34,7 +35,7 @@ router.get('/:id', async (req, res) => {
 router.post('/', async (req, res) => {
   const { name, remarks } = req.body;
   try {
-    const pool = await sql.connect();
+    const pool = getPool();
     await pool.request()
       .input('id', sql.NVarChar, req.body.id || self.crypto.randomUUID())
       .input('name', sql.NVarChar, name)
@@ -50,7 +51,7 @@ router.post('/', async (req, res) => {
 router.put('/:id', async (req, res) => {
   const { name, remarks } = req.body;
   try {
-    const pool = await sql.connect();
+    const pool = getPool();
     const result = await pool.request()
       .input('id', sql.NVarChar, req.params.id)
       .input('name', sql.NVarChar, name)
@@ -69,7 +70,7 @@ router.put('/:id', async (req, res) => {
 // DELETE a stage
 router.delete('/:id', async (req, res) => {
   try {
-    const pool = await sql.connect();
+    const pool = getPool();
     const result = await pool.request()
       .input('id', sql.NVarChar, req.params.id)
       .query('DELETE FROM Stages WHERE id = @id');

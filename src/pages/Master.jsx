@@ -1,4 +1,7 @@
 import React, { useState, useEffect } from 'react';
+import axios from 'axios'; // Import axios
+
+const API_BASE_URL = 'http://localhost:5000/api'; // Your backend API base URL
 
 const Master = ({ showAlert }) => {
   const [stages, setStages] = useState([]);
@@ -6,50 +9,47 @@ const Master = ({ showAlert }) => {
   const [remarks, setRemarks] = useState('');
   const [editingId, setEditingId] = useState(null);
 
-  // const API_BASE_URL = 'http://localhost:5000/api'; // Your backend API base URL
+  // Function to fetch stages from the backend
+  const fetchStages = async () => {
+    try {
+      const response = await axios.get(`${API_BASE_URL}/stages`);
+      setStages(response.data);
+    } catch (error) {
+      console.error('Error fetching stages:', error);
+      showAlert('Error fetching stages.', 'error');
+    }
+  };
 
   useEffect(() => {
-    const storedStages = JSON.parse(localStorage.getItem('stages'));
-    if (storedStages && storedStages.length > 0) {
-      setStages(storedStages);
-    } else {
-      const defaultStages = [
-        { id: self.crypto.randomUUID(), name: 'HOLD from Team', remarks: '' },
-        { id: self.crypto.randomUUID(), name: 'Under Manufacturing', remarks: '' },
-        { id: self.crypto.randomUUID(), name: 'Ready for Internal FAT', remarks: '' },
-        { id: self.crypto.randomUUID(), name: 'Ready for Client FAT', remarks: '' },
-        { id: self.crypto.randomUUID(), name: 'Ready for Dispatch', remarks: '' },
-        { id: self.crypto.randomUUID(), name: 'Dispatched', remarks: '' },
-      ];
-      setStages(defaultStages);
-      localStorage.setItem('stages', JSON.stringify(defaultStages));
-    }
-  }, []);
+    fetchStages();
+  }, []); // Fetch stages on component mount
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => { // Made async
     e.preventDefault();
     if (!stageName) return;
 
     if (editingId) {
       // Update existing stage
-      const updatedStages = stages.map((stage) =>
-        stage.id === editingId ? { ...stage, name: stageName.trim(), remarks } : stage
-      );
-      setStages(updatedStages);
-      localStorage.setItem('stages', JSON.stringify(updatedStages));
-      setEditingId(null);
-      showAlert('Stage updated successfully!', 'success');
+      try {
+        await axios.put(`${API_BASE_URL}/stages/${editingId}`, { name: stageName.trim(), remarks });
+        showAlert('Stage updated successfully!', 'success');
+        fetchStages(); // Re-fetch stages to update the list
+      } catch (error) {
+        console.error('Error updating stage:', error);
+        showAlert('Error updating stage.', 'error');
+      } finally {
+        setEditingId(null);
+      }
     } else {
       // Add new stage
-      const newStage = {
-        id: self.crypto.randomUUID(),
-        name: stageName.trim(),
-        remarks,
-      };
-      const updatedStages = [...stages, newStage];
-      setStages(updatedStages);
-      localStorage.setItem('stages', JSON.stringify(updatedStages));
-      showAlert('Stage created successfully!', 'success');
+      try {
+        await axios.post(`${API_BASE_URL}/stages`, { name: stageName.trim(), remarks });
+        showAlert('Stage created successfully!', 'success');
+        fetchStages(); // Re-fetch stages to update the list
+      } catch (error) {
+        console.error('Error creating stage:', error);
+        showAlert('Error creating stage.', 'error');
+      }
     }
 
     setStageName('');
@@ -62,13 +62,17 @@ const Master = ({ showAlert }) => {
     setRemarks(stage.remarks);
   };
 
-  const handleDelete = (id) => {
+  const handleDelete = async (id) => { // Made async
     const confirmDelete = window.confirm("Are you sure you want to delete this stage?");
     if (confirmDelete) {
-      const updatedStages = stages.filter((stage) => stage.id !== id);
-      setStages(updatedStages);
-      localStorage.setItem('stages', JSON.stringify(updatedStages));
-      showAlert('Stage deleted successfully!', 'success');
+      try {
+        await axios.delete(`${API_BASE_URL}/stages/${id}`);
+        showAlert('Stage deleted successfully!', 'success');
+        fetchStages(); // Re-fetch stages to update the list
+      } catch (error) {
+        console.error('Error deleting stage:', error);
+        showAlert('Error deleting stage.', 'error');
+      }
     }
   };
   

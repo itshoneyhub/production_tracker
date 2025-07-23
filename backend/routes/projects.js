@@ -1,11 +1,12 @@
 const express = require('express');
 const router = express.Router();
-const sql = require('mssql');
+const { getPool, sql } = require('../db');
+const { v4: uuidv4 } = require('uuid');
 
 // GET all projects
 router.get('/', async (req, res) => {
   try {
-    const pool = await sql.connect();
+    const pool = getPool();
     const result = await pool.request().query('SELECT * FROM Projects');
     res.json(result.recordset);
   } catch (err) {
@@ -16,7 +17,7 @@ router.get('/', async (req, res) => {
 // GET a single project by ID
 router.get('/:id', async (req, res) => {
   try {
-    const pool = await sql.connect();
+    const pool = getPool();
     const result = await pool.request()
       .input('id', sql.NVarChar, req.params.id)
       .query('SELECT * FROM Projects WHERE id = @id');
@@ -32,18 +33,19 @@ router.get('/:id', async (req, res) => {
 
 // POST a new project
 router.post('/', async (req, res) => {
-  const { projectNo, customerName, projectDate, targetDate, productionStage, remarks } = req.body;
+  const { projectNo, customerName, owner, projectDate, targetDate, productionStage, remarks } = req.body;
   try {
-    const pool = await sql.connect();
+    const pool = getPool();
     await pool.request()
-      .input('id', sql.NVarChar, req.body.id || self.crypto.randomUUID()) // Use provided ID or generate new
+      .input('id', sql.NVarChar, req.body.id || uuidv4()) // Use provided ID or generate new
       .input('projectNo', sql.NVarChar, projectNo)
       .input('customerName', sql.NVarChar, customerName)
+      .input('owner', sql.NVarChar, owner)
       .input('projectDate', sql.Date, projectDate)
       .input('targetDate', sql.Date, targetDate)
       .input('productionStage', sql.NVarChar, productionStage)
       .input('remarks', sql.NVarChar, remarks)
-      .query('INSERT INTO Projects (id, projectNo, customerName, projectDate, targetDate, productionStage, remarks) VALUES (@id, @projectNo, @customerName, @projectDate, @targetDate, @productionStage, @remarks)');
+      .query('INSERT INTO Projects (id, projectNo, customerName, owner, projectDate, targetDate, productionStage, remarks) VALUES (@id, @projectNo, @customerName, @owner, @projectDate, @targetDate, @productionStage, @remarks)');
     res.status(201).send('Project created');
   } catch (err) {
     res.status(500).send(err.message);
@@ -52,18 +54,19 @@ router.post('/', async (req, res) => {
 
 // PUT (update) a project
 router.put('/:id', async (req, res) => {
-  const { projectNo, customerName, projectDate, targetDate, productionStage, remarks } = req.body;
+  const { projectNo, customerName, owner, projectDate, targetDate, productionStage, remarks } = req.body;
   try {
-    const pool = await sql.connect();
+    const pool = getPool();
     const result = await pool.request()
       .input('id', sql.NVarChar, req.params.id)
       .input('projectNo', sql.NVarChar, projectNo)
       .input('customerName', sql.NVarChar, customerName)
+      .input('owner', sql.NVarChar, owner)
       .input('projectDate', sql.Date, projectDate)
       .input('targetDate', sql.Date, targetDate)
       .input('productionStage', sql.NVarChar, productionStage)
       .input('remarks', sql.NVarChar, remarks)
-      .query('UPDATE Projects SET projectNo = @projectNo, customerName = @customerName, projectDate = @projectDate, targetDate = @targetDate, productionStage = @productionStage, remarks = @remarks WHERE id = @id');
+      .query('UPDATE Projects SET projectNo = @projectNo, customerName = @customerName, owner = @owner, projectDate = @projectDate, targetDate = @targetDate, productionStage = @productionStage, remarks = @remarks WHERE id = @id');
     if (result.rowsAffected[0] > 0) {
       res.send('Project updated');
     } else {
@@ -77,7 +80,7 @@ router.put('/:id', async (req, res) => {
 // DELETE a project
 router.delete('/:id', async (req, res) => {
   try {
-    const pool = await sql.connect();
+    const pool = getPool();
     const result = await pool.request()
       .input('id', sql.NVarChar, req.params.id)
       .query('DELETE FROM Projects WHERE id = @id');

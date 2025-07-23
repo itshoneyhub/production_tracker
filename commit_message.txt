@@ -1,0 +1,3 @@
+fix: Restore application styling
+
+This commit restores the full application styling by updating `src/styles.css` with the complete CSS content and ensuring its import in `src/main.jsx`.

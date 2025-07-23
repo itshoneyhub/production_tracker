@@ -16,6 +16,8 @@
     "@azure/msal-browser": "^4.15.0",
     "@firebasegen/default-connector": "file:dataconnect-generated/js/default-connector",
     "@microsoft/microsoft-graph-client": "^3.0.7",
+    "axios": "^1.11.0",
+    "dotenv": "^17.2.0",
     "firebase": "^11.10.0",
     "react": "^19.1.0",
     "react-datepicker": "^8.4.0",
