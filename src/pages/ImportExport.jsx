@@ -5,7 +5,7 @@ import { msalConfig, loginRequest } from '../authConfig';
 import { Client } from '@microsoft/microsoft-graph-client';
 
 const ImportExport = ({ showAlert }) => {
-  const [message, setMessage] = useState(null);
+  
   const [msalInstance] = useState(new PublicClientApplication(msalConfig));
   const [graphClient, setGraphClient] = useState(null);
   const [fileLink, setFileLink] = useState('');
@@ -89,6 +89,7 @@ const ImportExport = ({ showAlert }) => {
     const headers = [
       'Project No',
       'Customer Name',
+      'Owner',
       'Project Date',
       'Target Date',
       'Production Stage',
@@ -125,6 +126,7 @@ const ImportExport = ({ showAlert }) => {
             id: self.crypto.randomUUID(),
             projectNo: row['Project No'] || '',
             customerName: row['Customer Name'] || '',
+            owner: row['Owner'] || '',
             projectDate: row['Project Date'] instanceof Date ? row['Project Date'] : new Date(),
             targetDate: row['Target Date'] instanceof Date ? row['Target Date'] : new Date(),
             productionStage: row['Production Stage'] || '',

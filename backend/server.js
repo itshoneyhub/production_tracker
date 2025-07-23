@@ -1,7 +1,6 @@
-require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
-const sql = require('mssql');
+const { connectDB, getPool, sql } = require('./db');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -10,30 +9,23 @@ const PORT = process.env.PORT || 5000;
 app.use(cors());
 app.use(express.json());
 
-// SQL Server configuration
-const config = {
-  user: process.env.DB_USER || 'HANUMANT',
-  password: process.env.DB_PASSWORD || 'Pravin@123',
-  server: process.env.DB_SERVER || 'DESKTOP-AMHGFBV\\SQLEXPRESS', // You may need to escape backslashes
-  database: process.env.DB_DATABASE || 'productionTrackerdb',
-  options: {
-    encrypt: false, // Use true for Azure SQL Database, false for local SQL Server
-    trustServerCertificate: true, // Change to true for local dev / self-signed certs
-    port: 1433 // Explicitly set port to 1433
-  }
-};
-
-// Connect to SQL Server
-sql.connect(config).then(pool => {
-  if (pool.connected) {
-    console.log('Connected to SQL Server');
-  }
-  return pool;
-}).catch(err => console.error('Database Connection Failed:', err));
+// Connect to Database
+connectDB();
 
 // Basic route
 app.get('/', (req, res) => {
   res.send('API is running...');
+});
+
+// Test DB connection
+app.get('/api/test-db', async (req, res) => {
+  try {
+    const pool = getPool();
+    const result = await pool.request().query('SELECT 1 AS number');
+    res.json(result.recordset);
+  } catch (err) {
+    res.status(500).send({ message: err.message });
+  }
 });
 
 // API routes (will be defined in separate files later)

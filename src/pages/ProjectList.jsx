@@ -13,12 +13,16 @@ const ProjectList = ({ showAlert }) => {
     targetDate: new Date(),
     productionStage: '',
     remarks: '',
+    owner: '',
   });
   const [editingId, setEditingId] = useState(null);
   const [editedStage, setEditedStage] = useState('');
+  const [projectNoError, setProjectNoError] = useState('');
   const [filter, setFilter] = useState('All');
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const recordsPerPage = 25;
 
   // const API_BASE_URL = 'http://localhost:5000/api'; // Your backend API base URL
 
@@ -42,11 +46,21 @@ const ProjectList = ({ showAlert }) => {
       });
     }
     setFilteredProjects(filtered);
+    setCurrentPage(1); // Reset to first page on filter change
   }, [filter, startDate, endDate, projects]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
+
+    if (name === 'projectNo') {
+      const isDuplicate = projects.some(p => p.projectNo.trim() === value.trim() && p.id !== editingId);
+      if (isDuplicate) {
+        setProjectNoError('Project is already available in the List.');
+      } else {
+        setProjectNoError('');
+      }
+    }
   };
 
   const handleDateChange = (date, name) => {
@@ -56,11 +70,24 @@ const ProjectList = ({ showAlert }) => {
   const handleSubmit = (e) => {
     e.preventDefault();
 
+    const projectNoTrimmed = formData.projectNo.trim();
+    if (!projectNoTrimmed) {
+        showAlert('Project No cannot be empty.', 'error');
+        return;
+    }
+
     if (editingId) {
-      const confirmUpdate = window.confirm("Are you sure you want to update this project's production stage?");
+      // When editing, check for duplicates excluding the current project
+      const isDuplicate = projects.some(p => p.id !== editingId && p.projectNo.trim() === projectNoTrimmed);
+      if (isDuplicate) {
+        showAlert('Project is already available in the List.', 'error');
+        return;
+      }
+
+      const confirmUpdate = window.confirm("Are you sure you want to update this project?");
       if (confirmUpdate) {
         const updatedProjects = projects.map((project) =>
-          project.id === editingId ? { ...project, productionStage: editedStage } : project
+          project.id === editingId ? { ...project, ...formData, projectNo: projectNoTrimmed, productionStage: editedStage } : project
         );
         setProjects(updatedProjects);
         localStorage.setItem('projects', JSON.stringify(updatedProjects));
@@ -69,7 +96,13 @@ const ProjectList = ({ showAlert }) => {
         showAlert('Project updated successfully!', 'success');
       }
     } else {
-      const newProject = { ...formData, id: self.crypto.randomUUID() };
+      // When adding, check all projects for duplicates
+      const isDuplicate = projects.some(project => project.projectNo.trim() === projectNoTrimmed);
+      if (isDuplicate) {
+        showAlert('Project is already available in the List.', 'error');
+        return;
+      }
+      const newProject = { ...formData, projectNo: projectNoTrimmed, id: self.crypto.randomUUID() };
       const updatedProjects = [...projects, newProject];
       setProjects(updatedProjects);
       localStorage.setItem('projects', JSON.stringify(updatedProjects));
@@ -83,6 +116,7 @@ const ProjectList = ({ showAlert }) => {
       targetDate: new Date(),
       productionStage: '',
       remarks: '',
+      owner: '',
     });
   };
 
@@ -116,8 +150,21 @@ const ProjectList = ({ showAlert }) => {
         targetDate: new Date(),
         productionStage: '',
         remarks: '',
+        owner: '',
       });
   }
+
+  const lastRecordIndex = currentPage * recordsPerPage;
+  const firstRecordIndex = lastRecordIndex - recordsPerPage;
+  const currentRecords = filteredProjects.slice(firstRecordIndex, lastRecordIndex);
+
+  const nPages = Math.ceil(filteredProjects.length / recordsPerPage);
+
+  const changePage = (pageNumber) => {
+    if (pageNumber >= 1 && pageNumber <= nPages) {
+      setCurrentPage(pageNumber);
+    }
+  };
 
   return (
     <div className="page-container">
@@ -135,6 +182,7 @@ const ProjectList = ({ showAlert }) => {
                     placeholder="Enter project number"
                     required
                     />
+                    {projectNoError && <p style={{ color: 'red' }}>{projectNoError}</p>}
                 </div>
                 <div className="form-group">
                     <label>Customer Name</label>
@@ -144,6 +192,17 @@ const ProjectList = ({ showAlert }) => {
                     value={formData.customerName}
                     onChange={handleInputChange}
                     placeholder="Enter customer name"
+                    required
+                    />
+                </div>
+                <div className="form-group">
+                    <label>Owner</label>
+                    <input
+                    type="text"
+                    name="owner"
+                    value={formData.owner}
+                    onChange={handleInputChange}
+                    placeholder="Enter owner name"
                     required
                     />
                 </div>
@@ -189,8 +248,14 @@ const ProjectList = ({ showAlert }) => {
                 </div>
             </div>
           <div className="form-actions">
-            <button type="submit">{editingId ? 'Update' : 'Save'}</button>
-            {editingId && <button type="button" className='cancel' onClick={handleCancel}>Cancel</button>}
+            {editingId ? (
+              <>
+                <button type="submit">Save</button>
+                <button type="button" className='cancel' onClick={handleCancel}>Cancel</button>
+              </>
+            ) : (
+              <button type="submit" className="add-button">+ Add</button>
+            )}
           </div>
         </form>
       </div>
@@ -215,7 +280,6 @@ const ProjectList = ({ showAlert }) => {
                     startDate={startDate}
                     endDate={endDate}
                     placeholderText="Start Date"
-                    className="date-picker-input"
                 />
             </div>
             <div className="date-filter-group">
@@ -228,7 +292,6 @@ const ProjectList = ({ showAlert }) => {
                     startDate={startDate}
                     endDate={endDate}
                     placeholderText="End Date"
-                    className="date-picker-input"
                 />
             </div>
         </div>
@@ -238,22 +301,24 @@ const ProjectList = ({ showAlert }) => {
         <table>
           <thead>
             <tr>
-              <th>Sr. No</th>
-              <th>Project No</th>
+              <th className="sr-no-column">Sr. No</th>
+              <th className="project-no-column">Project No</th>
               <th className="customer-name-column">Customer Name</th>
-              <th>Project Date</th>
-              <th>Target Date</th>
-              <th>Production Stage</th>
-              <th>Remarks</th>
-              <th>Actions</th>
+              <th className="owner-column">Owner</th>
+              <th className="project-date-column">Project Date</th>
+              <th className="target-date-column">Target Date</th>
+              <th className="production-stage-column">Production Stage</th>
+              <th className="remarks-column">Remarks</th>
+              <th className="actions-column">Actions</th>
             </tr>
           </thead>
           <tbody>
-            {filteredProjects.map((project, index) => (
+            {currentRecords.map((project, index) => (
               <tr key={project.id}>
-                <td data-label="Sr. No">{index + 1}</td>
+                <td data-label="Sr. No" className="text-center">{firstRecordIndex + index + 1}</td>
                 <td data-label="Project No">{project.projectNo}</td>
                 <td data-label="Customer Name">{project.customerName}</td>
+                <td data-label="Owner">{project.owner}</td>
                 <td data-label="Project Date">{new Date(project.projectDate).toLocaleDateString()}</td>
                 <td data-label="Target Date">{new Date(project.targetDate).toLocaleDateString()}</td>
                 <td data-label="Production Stage">
@@ -291,6 +356,26 @@ const ProjectList = ({ showAlert }) => {
           </tbody>
         </table>
       </div>
+
+      {nPages > 1 && (
+        <div className="pagination">
+          <button onClick={() => changePage(currentPage - 1)} disabled={currentPage === 1}>
+            Previous
+          </button>
+          {[...Array(nPages)].map((_, index) => (
+            <button
+              key={index + 1}
+              onClick={() => changePage(index + 1)}
+              className={currentPage === index + 1 ? 'active' : ''}
+            >
+              {index + 1}
+            </button>
+          ))}
+          <button onClick={() => changePage(currentPage + 1)} disabled={currentPage === nPages}>
+            Next
+          </button>
+        </div>
+      )}
     </div>
   );
 };

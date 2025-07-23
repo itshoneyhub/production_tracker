@@ -67,12 +67,14 @@ const Dashboard = () => {
       {selectedStage && (
         <div className="table-container">
             <h3>{selectedStage === 'All' ? 'All Projects' : `${selectedStage} Projects`}</h3>
-          <table>
+          <table className="dashboard-details-table">
             <thead>
               <tr>
                 <th>Project No</th>
                 <th>Customer Name</th>
+                <th>Owner</th>
                 <th>Project Date</th>
+                <th>Target Date</th>
               </tr>
             </thead>
             <tbody>
@@ -80,7 +82,9 @@ const Dashboard = () => {
                 <tr key={project.id}>
                   <td>{project.projectNo}</td>
                   <td>{project.customerName}</td>
+                  <td>{project.owner}</td>
                   <td>{new Date(project.projectDate).toLocaleDateString()}</td>
+                  <td>{new Date(project.targetDate).toLocaleDateString()}</td>
                 </tr>
               ))}
             </tbody>
