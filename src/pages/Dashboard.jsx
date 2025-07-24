@@ -23,6 +23,7 @@ const Dashboard = () => {
   const fetchStages = async () => {
     try {
       const response = await axios.get(`${API_BASE_URL}/stages`);
+      
       setStages(response.data.map(s => ({...s, name: s.name.trim()})));
     } catch (error) {
       console.error('Error fetching stages:', error);
@@ -89,8 +90,8 @@ const Dashboard = () => {
                   <td>{project.projectNo}</td>
                   <td>{project.customerName}</td>
                   <td>{project.owner}</td>
-                  <td>{new Date(project.projectDate).toLocaleDateString()}</td>
-                  <td>{new Date(project.targetDate).toLocaleDateString()}</td>
+                  <td>{new Date(project.projectDate).toLocaleDateString(undefined, { day: '2-digit', month: 'short', year: 'numeric' })}</td>
+                  <td>{new Date(project.targetDate).toLocaleDateString(undefined, { day: '2-digit', month: 'short', year: 'numeric' })}</td>
                 </tr>
               ))}
             </tbody>

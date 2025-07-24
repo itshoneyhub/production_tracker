@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import axios from 'axios'; // Import axios
+import * as XLSX from 'xlsx'; // Import xlsx
 
 const API_BASE_URL = 'http://localhost:5000/api'; // Your backend API base URL
 
@@ -22,8 +23,24 @@ const ProjectList = ({ showAlert }) => {
   const [editedStage, setEditedStage] = useState('');
   const [projectNoError, setProjectNoError] = useState('');
   const [filter, setFilter] = useState('All');
-  const [startDate, setStartDate] = useState(null);
-  const [endDate, setEndDate] = useState(null);
+
+  // Calculate current fiscal year start and end dates
+  const getFiscalYearDates = () => {
+    const today = new Date();
+    let fiscalYearStart = new Date(today.getFullYear(), 3, 1); // April 1st
+    let fiscalYearEnd = new Date(today.getFullYear() + 1, 2, 31); // March 31st of next year
+
+    if (today.getMonth() < 3) { // If current month is Jan, Feb, or Mar
+      fiscalYearStart = new Date(today.getFullYear() - 1, 3, 1);
+      fiscalYearEnd = new Date(today.getFullYear(), 2, 31);
+    }
+    return { fiscalYearStart, fiscalYearEnd };
+  };
+
+  const { fiscalYearStart, fiscalYearEnd } = getFiscalYearDates();
+  const [startDate, setStartDate] = useState(fiscalYearStart);
+  const [endDate, setEndDate] = useState(fiscalYearEnd);
+
   const [currentPage, setCurrentPage] = useState(1);
   const recordsPerPage = 25;
 
@@ -201,6 +218,24 @@ const ProjectList = ({ showAlert }) => {
     }
   };
 
+  const handleDownloadExcel = () => {
+    const data = filteredProjects.map(project => ({
+      "Sr. No": filteredProjects.indexOf(project) + 1,
+      "Project No": project.projectNo,
+      "Customer Name": project.customerName,
+      "Owner": project.owner,
+      "Project Date": new Date(project.projectDate).toLocaleDateString(navigator.language),
+      "Target Date": new Date(project.targetDate).toLocaleDateString(navigator.language),
+      "Production Stage": project.productionStage,
+      "Remarks": project.remarks,
+    }));
+
+    const ws = XLSX.utils.json_to_sheet(data);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "ProjectList");
+    XLSX.writeFile(wb, "ProjectList.xlsx");
+  };
+
   return (
     <div className="page-container">
       <h2>Project List</h2>
@@ -266,7 +301,7 @@ const ProjectList = ({ showAlert }) => {
                     <option value="">Select Stage</option>
                     {stages.map((stage) => (
                         <option key={stage.id} value={stage.name}>
-                        {stage.name}
+                          {stage.name}
                         </option>
                     ))}
                     </select>
@@ -289,7 +324,10 @@ const ProjectList = ({ showAlert }) => {
                 <button type="button" className='cancel' onClick={handleCancel}>Cancel</button>
               </>
             ) : (
-              <button type="submit" className="add-button">+ Add</button>
+              <>
+                <button type="submit" className="add-button">+ Add</button>
+                <button type="button" onClick={handleDownloadExcel}>Download Excel</button>
+              </>
             )}
           </div>
         </form>
@@ -354,8 +392,8 @@ const ProjectList = ({ showAlert }) => {
                 <td data-label="Project No">{project.projectNo}</td>
                 <td data-label="Customer Name">{project.customerName}</td>
                 <td data-label="Owner">{project.owner}</td>
-                <td data-label="Project Date">{new Date(project.projectDate).toLocaleDateString()}</td>
-                <td data-label="Target Date">{new Date(project.targetDate).toLocaleDateString()}</td>
+                <td data-label="Project Date">{new Date(project.projectDate).toLocaleDateString(undefined, { day: '2-digit', month: 'short', year: 'numeric' })}</td>
+                <td data-label="Target Date">{new Date(project.targetDate).toLocaleDateString(undefined, { day: '2-digit', month: 'short', year: 'numeric' })}</td>
                 <td data-label="Production Stage">
                   {editingId === project.id ? (
                     <select

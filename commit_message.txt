@@ -1,3 +1,14 @@
-fix: Restore application styling
+feat: UI/UX improvements and Stages master list correction
 
-This commit restores the full application styling by updating `src/styles.css` with the complete CSS content and ensuring its import in `src/main.jsx`.
+This commit implements several UI/UX enhancements and corrects the Stages master list.
+
+UI/UX Improvements:
+- Implemented project list pagination (25 projects per page).
+- Moved the "Add" button to the right-hand side in the project form.
+- Styled the "Production Stage" field to match other form fields.
+- Repositioned the "Logout" button to the top-right corner and applied consistent styling.
+- Ensured full responsiveness across mobile, tablet, and desktop devices.
+
+Stages Master List Correction:
+- Updated `backend/seed.sql` to reflect the hardcoded Stages master list from `Master.jsx`.
+- Ensured the SQL `Stages` table contains only these specific stages.
