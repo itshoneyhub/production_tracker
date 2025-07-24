@@ -7,6 +7,7 @@ import Master from './pages/Master';
 import ImportExport from './pages/ImportExport';
 import LoginPage from './pages/LoginPage';
 import AlertMessage from './components/AlertMessage'; // Import AlertMessage
+import Portal from './components/Portal'; // Import Portal
 
 function App() {
   const [alert, setAlert] = useState(null);
@@ -18,7 +19,9 @@ function App() {
 
   return (
     <Router>
-      <AlertMessage message={alert?.message} type={alert?.type} onDismiss={() => setAlert(null)} />
+      <Portal wrapperId="alert-root">
+        <AlertMessage message={alert?.message} type={alert?.type} onDismiss={() => setAlert(null)} />
+      </Portal>
       <>
         <Navbar /> {/* Removed onLogout prop */}
         <div className="container">

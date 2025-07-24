@@ -107,7 +107,7 @@ const Master = ({ showAlert }) => {
             />
           </div>
           <div className="form-actions">
-            <button type="submit">{editingId ? 'Update' : 'Save'}</button>
+            <button type="submit">{editingId ? 'Update' : '+ Add'}</button>
             {editingId && <button type="button" className="cancel" onClick={handleCancel}>Cancel</button>}
           </div>
         </form>

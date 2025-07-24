@@ -37,7 +37,7 @@ router.post('/', async (req, res) => {
   try {
     const pool = getPool();
     await pool.request()
-      .input('id', sql.NVarChar, req.body.id || self.crypto.randomUUID())
+      .input('id', sql.NVarChar, req.body.id || uuidv4())
       .input('name', sql.NVarChar, name)
       .input('remarks', sql.NVarChar, remarks)
       .query('INSERT INTO Stages (id, name, remarks) VALUES (@id, @name, @remarks)');

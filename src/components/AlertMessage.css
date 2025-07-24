@@ -7,7 +7,7 @@
   border-radius: 6px; /* Slightly smaller border-radius */
   font-weight: 500; /* Slightly less bold */
   color: #fff;
-  z-index: 1000;
+  z-index: 9999;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15); /* Softer shadow */
   opacity: 0;
   transition: opacity 0.5s ease-in-out, transform 0.3s ease-out; /* Added transform transition */
