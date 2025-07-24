@@ -3,6 +3,10 @@ import * as XLSX from 'xlsx';
 import { PublicClientApplication } from '@azure/msal-browser';
 import { msalConfig, loginRequest } from '../authConfig';
 import { Client } from '@microsoft/microsoft-graph-client';
+import { v4 as uuidv4 } from 'uuid'; // Import uuidv4
+import axios from 'axios'; // Import axios
+
+const API_BASE_URL = 'http://localhost:5000/api'; // Your backend API base URL
 
 const ImportExport = ({ showAlert }) => {
   
@@ -73,12 +77,17 @@ const ImportExport = ({ showAlert }) => {
         return project;
       });
 
-      const existingProjects = JSON.parse(localStorage.getItem('projects')) || [];
-      const mergedProjects = [...existingProjects, ...importedProjects.map(p => ({...p, id: self.crypto.randomUUID()}))];
-      localStorage.setItem('projects', JSON.stringify(mergedProjects));
+      // Send each imported project to the backend
+      for (const project of importedProjects) {
+        try {
+          await axios.post(`${API_BASE_URL}/projects`, { ...project, id: uuidv4() });
+          showAlert(`Project ${project.projectNo} imported successfully!`, 'success');
+        } catch (error) {
+          console.error(`Error importing project ${project.projectNo}:`, error);
+          showAlert(`Error importing project ${project.projectNo}. Check console for details.`, 'error');
+        }
+      }
 
-      showAlert('Projects imported successfully!', 'success');
-      window.dispatchEvent(new Event('storage'));
     } catch (error) {
       console.error("Import from Teams Error:", error);
       showAlert('Error importing file from Teams. Check console for details.', 'error');
@@ -101,50 +110,57 @@ const ImportExport = ({ showAlert }) => {
     XLSX.writeFile(wb, 'Project_Template.xlsx');
   };
 
-  const handleImport = (e) => {
+  const handleImport = async (e) => {
     const file = e.target.files[0];
     if (!file) {
       showAlert('No file selected.', 'info');
       return;
     }
 
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      try {
-        const data = new Uint8Array(event.target.result);
-        const workbook = XLSX.read(data, { type: 'array' });
-        const sheetName = workbook.SheetNames[0];
-        const worksheet = workbook.Sheets[sheetName];
-        const jsonData = XLSX.utils.sheet_to_json(worksheet, { cellDates: true });
+    try {
+      const data = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = (event) => resolve(event.target.result);
+        reader.onerror = (error) => reject(error);
+        reader.readAsArrayBuffer(file);
+      });
 
-        if (jsonData.length === 0) {
-          showAlert('The file is empty or has no data.', 'error');
-          return;
-        }
+      const workbook = XLSX.read(new Uint8Array(data), { type: 'array' });
+      const sheetName = workbook.SheetNames[0];
+      const worksheet = workbook.Sheets[sheetName];
+      const jsonData = XLSX.utils.sheet_to_json(worksheet, { cellDates: true });
 
-        const importedProjects = jsonData.map(row => ({
-            id: self.crypto.randomUUID(),
-            projectNo: row['Project No'] || '',
-            customerName: row['Customer Name'] || '',
-            owner: row['Owner'] || '',
-            projectDate: row['Project Date'] instanceof Date ? row['Project Date'] : new Date(),
-            targetDate: row['Target Date'] instanceof Date ? row['Target Date'] : new Date(),
-            productionStage: row['Production Stage'] || '',
-            remarks: row['Remarks'] || '',
-        }));
-
-        const existingProjects = JSON.parse(localStorage.getItem('projects')) || [];
-        const mergedProjects = [...existingProjects, ...importedProjects];
-        localStorage.setItem('projects', JSON.stringify(mergedProjects));
-
-        showAlert('Projects imported successfully!', 'success');
-        window.dispatchEvent(new Event('storage'));
-      } catch (error) {
-        console.error("Import Error:", error);
-        showAlert('Error importing file. Please check the file format and data.', 'error');
+      if (jsonData.length === 0) {
+        showAlert('The file is empty or has no data.', 'error');
+        return;
       }
-    };
-    reader.readAsArrayBuffer(file);
+
+      const importedProjects = jsonData.map(row => ({
+          id: uuidv4(),
+          projectNo: row['Project No'] || '',
+          customerName: row['Customer Name'] || '',
+          owner: row['Owner'] || '',
+          projectDate: row['Project Date'] instanceof Date ? row['Project Date'] : new Date(),
+          targetDate: row['Target Date'] instanceof Date ? row['Target Date'] : new Date(),
+          productionStage: row['Production Stage'] || '',
+          remarks: row['Remarks'] || '',
+      }));
+
+      // Send each imported project to the backend
+      for (const project of importedProjects) {
+        try {
+          await axios.post(`${API_BASE_URL}/projects`, project);
+          showAlert(`Project ${project.projectNo} imported successfully!`, 'success');
+        } catch (error) {
+          console.error(`Error importing project ${project.projectNo}:`, error);
+          showAlert('Error importing project ' + (project.projectNo || 'unknown') + '. Check console for details.', 'error');
+        }
+      }
+
+    } catch (error) {
+      console.error("Import Error:", error);
+      showAlert('Error importing file. Please check the file format and data.', 'error');
+    }
   };
 
   return (
