@@ -1,5 +1,6 @@
 const express = require('express');
 const cors = require('cors');
+const path = require('path');
 const { connectDB, getPool, sql } = require('./db');
 
 const app = express();
@@ -12,10 +13,12 @@ app.use(express.json());
 // Connect to Database
 connectDB();
 
-// Basic route
-app.get('/', (req, res) => {
-  res.send('API is running...');
-});
+// Serve static files from the React app
+app.use(express.static(path.join(__dirname, '../build')));
+
+// API routes
+app.use('/api/projects', require('./routes/projects'));
+app.use('/api/stages', require('./routes/stages'));
 
 // Test DB connection
 app.get('/api/test-db', async (req, res) => {
@@ -28,9 +31,11 @@ app.get('/api/test-db', async (req, res) => {
   }
 });
 
-// API routes (will be defined in separate files later)
-app.use('/api/projects', require('./routes/projects'));
-app.use('/api/stages', require('./routes/stages'));
+// The "catchall" handler: for any request that doesn't
+// match one of the API routes, send back React's index.html file.
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, '../build', 'index.html'));
+});
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
