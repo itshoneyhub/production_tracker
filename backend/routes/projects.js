@@ -8,8 +8,10 @@ router.get('/', async (req, res) => {
   try {
     const pool = getPool();
     const result = await pool.request().query('SELECT * FROM Projects');
+    console.log('Projects result:', result.recordset);
     res.json(result.recordset);
   } catch (err) {
+    console.error('Error fetching projects:', err);
     res.status(500).send(err.message);
   }
 });
