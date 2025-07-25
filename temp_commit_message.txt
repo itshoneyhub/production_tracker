@@ -1,0 +1,1 @@
+fix(server): serve react app and handle client-side routing
