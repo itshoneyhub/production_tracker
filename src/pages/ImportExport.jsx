@@ -6,7 +6,7 @@ import { Client } from '@microsoft/microsoft-graph-client';
 import { v4 as uuidv4 } from 'uuid'; // Import uuidv4
 import axios from 'axios'; // Import axios
 
-const API_BASE_URL = 'http://localhost:5000/api'; // Your backend API base URL
+const API_BASE_URL = '/api';
 
 const ImportExport = ({ showAlert }) => {
   

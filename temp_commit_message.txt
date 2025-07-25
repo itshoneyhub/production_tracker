@@ -1,1 +1,1 @@
-fix(server): serve react app and handle client-side routing
+fix(vite): remove base path configuration

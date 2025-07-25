@@ -4,7 +4,7 @@ import 'react-datepicker/dist/react-datepicker.css';
 import axios from 'axios'; // Import axios
 import * as XLSX from 'xlsx'; // Import xlsx
 
-const API_BASE_URL = 'http://localhost:5000/api'; // Your backend API base URL
+const API_BASE_URL = '/api';
 
 const ProjectList = ({ showAlert }) => {
   const [projects, setProjects] = useState([]);

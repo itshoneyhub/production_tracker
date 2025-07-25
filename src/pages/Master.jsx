@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios'; // Import axios
 
-const API_BASE_URL = 'http://localhost:5000/api'; // Your backend API base URL
+const API_BASE_URL = '/api';
 
 const Master = ({ showAlert }) => {
   const [stages, setStages] = useState([]);
