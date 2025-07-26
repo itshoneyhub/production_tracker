@@ -1,1 +1,1 @@
-feat: Enable stages API route and clean up server.js
+refactor: Remove debugging console logs and clean up server.js
