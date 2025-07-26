@@ -1,1 +1,1 @@
-fix: Configure Vite base path for GitHub Pages deployment
+refactor: Remove unnecessary console.log from server.js
