@@ -1,1 +1,1 @@
-Enhance UI, add Excel download, fix date formats, and remove console logs.
+feat: Enable stages API route and clean up server.js

@@ -8,7 +8,7 @@ router.get('/', async (req, res) => {
   try {
     const pool = getPool();
     const result = await pool.request().query('SELECT * FROM Stages');
-    console.log('Stages result:', result.recordset);
+    
     res.json(result.recordset);
   } catch (err) {
     console.error('Error fetching stages:', err);

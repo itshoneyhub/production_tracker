@@ -23,10 +23,7 @@ const dbConfig = {
 let pool;
 
 const connectDB = async () => {
-  console.log('--- Parsed DB Config ---');
-  console.log('dbConfig.port:', dbConfig.port);
-  console.log('Full dbConfig:', dbConfig);
-  console.log('------------------------');
+  
   try {
     pool = await new sql.ConnectionPool(dbConfig).connect();
     console.log('Connected to MSSQL');

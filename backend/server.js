@@ -40,10 +40,6 @@ app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, '../build', 'index.html'));
 });
 
-try {
-  app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
-  });
-} catch (error) {
-  console.error('Failed to start server:', error);
-}
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});
