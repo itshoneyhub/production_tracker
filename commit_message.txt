@@ -1,1 +1,1 @@
-refactor: Remove unnecessary console.log from server.js
+chore: Re-deploy with updated backend URL placeholder
