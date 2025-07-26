@@ -1,1 +1,1 @@
-fix(vite): remove base path configuration
+fix(backend): Add early server start log for debugging Railway deployment

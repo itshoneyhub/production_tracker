@@ -1,3 +1,5 @@
+require('dotenv').config({ path: './.env' });
+
 console.log('Server starting...');
 const express = require('express');
 const cors = require('cors');
@@ -38,6 +40,10 @@ app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, '../build', 'index.html'));
 });
 
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
+try {
+  app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+  });
+} catch (error) {
+  console.error('Failed to start server:', error);
+}
