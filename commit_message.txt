@@ -1,1 +1,1 @@
-feat: Configure cross-env for VITE_APP_BACKEND_URL in deploy script
+fix: Configure Vite base path for GitHub Pages deployment
