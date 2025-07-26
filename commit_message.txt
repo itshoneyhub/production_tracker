@@ -1,1 +1,1 @@
-refactor: Remove debugging console logs and clean up server.js
+feat: Configure cross-env for VITE_APP_BACKEND_URL in deploy script
