@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: production-tracker-frontend
+    env: static
+    staticPublishPath: ./dist
+    routes:
+      - path: /
+        dest: /index.html
+  - type: web
+    name: production-tracker-backend
+    env: node
+    plan: free
+    buildCommand: "npm install"
+    startCommand: "node server.js"
+    envVars:
+      - key: DATABASE_URL
+        sync: false
