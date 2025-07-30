@@ -16,9 +16,6 @@ app.use(express.json());
 // Connect to Database
 connectDB();
 
-// Serve static files from the React app
-app.use(express.static(path.join(__dirname, '../build')));
-
 // API routes
 app.use('/api/projects', require('./routes/projects'));
 app.use('/api/stages', require('./routes/stages'));
@@ -31,12 +28,6 @@ app.get('/api/test-db', async (req, res) => {
   } catch (err) {
     res.status(500).send({ message: err.message });
   }
-});
-
-// The "catchall" handler: for any request that doesn't
-// match one of the API routes, send back React's index.html file.
-app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, '../build', 'index.html'));
 });
 
 app.listen(PORT, () => {
