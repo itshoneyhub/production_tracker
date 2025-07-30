@@ -1,1 +1,1 @@
-build: increase chunk size warning limit
+fix: quote table and column names in SQL queries

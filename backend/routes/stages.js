@@ -6,7 +6,7 @@ const { v4: uuidv4 } = require('uuid');
 // GET all stages
 router.get('/', async (req, res) => {
   try {
-    const { rows } = await query('SELECT * FROM Stages');
+    const { rows } = await query('SELECT * FROM "Stages"');
     res.json(rows);
   } catch (err) {
     console.error('Error fetching stages:', err);
@@ -17,7 +17,7 @@ router.get('/', async (req, res) => {
 // GET a single stage by ID
 router.get('/:id', async (req, res) => {
   try {
-    const { rows } = await query('SELECT * FROM Stages WHERE id = $1', [req.params.id]);
+    const { rows } = await query('SELECT * FROM "Stages" WHERE "id" = $1', [req.params.id]);
     if (rows.length > 0) {
       res.json(rows[0]);
     } else {
@@ -32,7 +32,7 @@ router.get('/:id', async (req, res) => {
 router.post('/', async (req, res) => {
   const { name, remarks } = req.body;
   try {
-    await query('INSERT INTO Stages (id, name, remarks) VALUES ($1, $2, $3)', 
+    await query('INSERT INTO "Stages" ("id", "name", "remarks") VALUES ($1, $2, $3)', 
       [req.body.id || uuidv4(), name, remarks]);
     res.status(201).send('Stage created');
   } catch (err) {
@@ -44,7 +44,7 @@ router.post('/', async (req, res) => {
 router.put('/:id', async (req, res) => {
   const { name, remarks } = req.body;
   try {
-    const { rowCount } = await query('UPDATE Stages SET name = $2, remarks = $3 WHERE id = $1', 
+    const { rowCount } = await query('UPDATE "Stages" SET "name" = $2, "remarks" = $3 WHERE "id" = $1', 
       [req.params.id, name, remarks]);
     if (rowCount > 0) {
       res.send('Stage updated');
@@ -59,10 +59,11 @@ router.put('/:id', async (req, res) => {
 // DELETE a stage
 router.delete('/:id', async (req, res) => {
   try {
-    const { rowCount } = await query('DELETE FROM Stages WHERE id = $1', [req.params.id]);
+    const { rowCount } = await query('DELETE FROM "Stages" WHERE "id" = $1', [req.params.id]);
     if (rowCount > 0) {
       res.send('Stage deleted');
-    } else {
+    }
+    else {
       res.status(404).send('Stage not found');
     }
   } catch (err) {
