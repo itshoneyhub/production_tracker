@@ -5,6 +5,7 @@ services:
     rootDirectory: .
     staticPublishPath: ./dist
     buildCommand: "npm run build"
+    defaultFile: index.html
     
   - type: web
     name: production-tracker-backend
