@@ -1,35 +1,22 @@
-const sql = require('mssql');
+const { Pool } = require('pg');
 
 console.log('--- Environment Variables from process.env ---');
-console.log('process.env.DB_USER:', process.env.DB_USER);
-console.log('process.env.DB_PASSWORD:', process.env.DB_PASSWORD ? '********' : 'undefined'); // Mask password
-console.log('process.env.DB_SERVER:', process.env.DB_SERVER);
-console.log('process.env.DB_DATABASE:', process.env.DB_DATABASE);
-console.log('process.env.DB_PORT (raw):', process.env.DB_PORT);
+console.log('process.env.DATABASE_URL:', process.env.DATABASE_URL ? '********' : 'undefined'); // Mask URL
 console.log('----------------------------------------------');
 
-const dbConfig = {
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
-  server: process.env.DB_SERVER,
-  database: process.env.DB_DATABASE,
-  port: parseInt(process.env.DB_PORT, 10),
-  options: {
-    encrypt: false, // Use this if you're on Azure
-    trustServerCertificate: true, // Change to true for local dev / self-signed certs
-  },
-};
-
-let pool;
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: {
+    rejectUnauthorized: false
+  }
+});
 
 const connectDB = async () => {
-  
   try {
-    pool = await new sql.ConnectionPool(dbConfig).connect();
-    console.log('Connected to MSSQL');
+    await pool.connect();
+    console.log('Connected to PostgreSQL');
   } catch (err) {
     console.error('Database Connection Failed! Bad Config: ', err);
-    // Exit process with failure
     process.exit(1);
   }
 };
@@ -42,7 +29,8 @@ const getPool = () => {
 };
 
 module.exports = {
-  sql,
+  pool,
   connectDB,
   getPool,
+  query: (text, params) => pool.query(text, params),
 };
