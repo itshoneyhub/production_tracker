@@ -2,6 +2,7 @@ services:
   - type: web
     name: production-tracker-frontend
     env: static
+    rootDirectory: .
     staticPublishPath: ./dist
     routes:
       - path: /
