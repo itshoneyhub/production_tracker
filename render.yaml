@@ -1,5 +1,5 @@
 services:
-  - type: web
+  - type: static
     name: production-tracker-frontend
     env: static
     rootDirectory: .
