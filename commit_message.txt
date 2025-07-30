@@ -1,1 +1,1 @@
-fix: correct server db connection and catchall
+fix: build frontend before starting server
