@@ -4,7 +4,7 @@ require('dotenv').config({ path: './.env' });
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
-const { connectDB, getPool, sql } = require('./db');
+const { connectDB, query } = require('./db');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -26,9 +26,8 @@ app.use('/api/stages', require('./routes/stages'));
 // Test DB connection
 app.get('/api/test-db', async (req, res) => {
   try {
-    const pool = getPool();
-    const result = await pool.request().query('SELECT 1 AS number');
-    res.json(result.recordset);
+    const { rows } = await query('SELECT 1 AS number');
+    res.json(rows);
   } catch (err) {
     res.status(500).send({ message: err.message });
   }
@@ -37,7 +36,7 @@ app.get('/api/test-db', async (req, res) => {
 // The "catchall" handler: for any request that doesn't
 // match one of the API routes, send back React's index.html file.
 app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, '../build', 'index.html'));
+  res.sendFile(path.join(__dirname, '../dist', 'index.html'));
 });
 
 app.listen(PORT, () => {
