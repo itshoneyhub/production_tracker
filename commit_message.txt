@@ -1,1 +1,1 @@
-chore: Re-deploy with updated backend URL placeholder
+feat: configure frontend deployment

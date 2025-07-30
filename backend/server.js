@@ -17,7 +17,7 @@ app.use(express.json());
 connectDB();
 
 // Serve static files from the React app
-app.use(express.static(path.join(__dirname, '../build')));
+app.use(express.static(path.join(__dirname, '../dist')));
 
 // API routes
 app.use('/api/projects', require('./routes/projects'));
