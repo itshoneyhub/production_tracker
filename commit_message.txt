@@ -1,1 +1,1 @@
-fix: adapt queries for PostgreSQL
+fix: remove base path for Render deployment
