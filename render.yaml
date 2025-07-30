@@ -4,9 +4,7 @@ services:
     env: static
     rootDirectory: .
     staticPublishPath: ./dist
-    routes:
-      - path: /
-        dest: /index.html
+    
   - type: web
     name: production-tracker-backend
     env: node
