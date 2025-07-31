@@ -72,7 +72,11 @@ const ImportExport = ({ showAlert }) => {
       const importedProjects = jsonData.slice(1).map((row) => {
         const project = {};
         headers.forEach((header, index) => {
-          project[header] = row[index];
+          if (header === 'Project Date' || header === 'Target Date') {
+            project[header] = row[index] ? new Date(row[index]) : null;
+          } else {
+            project[header] = row[index];
+          }
         });
         return project;
       });
@@ -140,8 +144,8 @@ const ImportExport = ({ showAlert }) => {
           projectNo: row['Project No'] || '',
           customerName: row['Customer Name'] || '',
           owner: row['Owner'] || '',
-          projectDate: row['Project Date'] instanceof Date ? row['Project Date'] : new Date(),
-          targetDate: row['Target Date'] instanceof Date ? row['Target Date'] : new Date(),
+          projectDate: row['Project Date'] ? new Date(row['Project Date']) : null,
+          targetDate: row['Target Date'] ? new Date(row['Target Date']) : null,
           productionStage: row['Production Stage'] || '',
           remarks: row['Remarks'] || '',
       }));
