@@ -1,1 +1,1 @@
-fix: Improve date parsing robustness in import feature
+feat: Increase table header width and font size for better readability
