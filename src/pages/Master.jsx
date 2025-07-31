@@ -116,7 +116,7 @@ const Master = ({ showAlert }) => {
               />
             </div>
             <div className="form-actions" style={{ justifyContent: 'flex-end' }}>
-              <button type="submit">{editingId ? 'Save' : '+ Add'}</button>
+              <button type="submit" style={{ backgroundColor: editingId ? 'green' : '' }}>{editingId ? 'Save' : '+ Add'}</button>
               <button type="button" className="cancel" onClick={() => { setEditingId(null); setStageName(''); setRemarks(''); setIsModalOpen(false); }}>Cancel</button>
             </div>
           </form>

@@ -1,1 +1,1 @@
-fix: Handle DD-MM-YYYY date format in import
+feat: Update master edit form to match project edit form
