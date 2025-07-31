@@ -1,18 +1,10 @@
 services:
-  - type: static
-    name: production-tracker-frontend
-    env: static
-    rootDirectory: .
-    staticPublishPath: ./dist
-    buildCommand: "npm run build"
-    defaultFile: index.html
-    
   - type: web
-    name: production-tracker-backend
+    name: production-tracker
     env: node
     plan: free
-    buildCommand: "npm install"
-    startCommand: "node server.js"
+    buildCommand: "npm install && npm run build"
+    startCommand: "node backend/server.js"
     envVars:
       - key: DATABASE_URL
         sync: false
