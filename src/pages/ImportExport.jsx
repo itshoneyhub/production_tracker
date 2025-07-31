@@ -8,7 +8,10 @@ import axios from 'axios'; // Import axios
 
 const API_BASE_URL = import.meta.env.VITE_APP_BACKEND_URL || '/api';
 
+import { useNavigate } from 'react-router-dom';
+
 const ImportExport = ({ showAlert }) => {
+  const navigate = useNavigate();
   
   const [msalInstance] = useState(new PublicClientApplication(msalConfig));
   const [graphClient, setGraphClient] = useState(null);
@@ -91,6 +94,7 @@ const ImportExport = ({ showAlert }) => {
           showAlert(`Error importing project ${project.projectNo}. Check console for details.`, 'error');
         }
       }
+      navigate('/');
 
     } catch (error) {
       console.error("Import from Teams Error:", error);
@@ -160,6 +164,7 @@ const ImportExport = ({ showAlert }) => {
           showAlert('Error importing project ' + (project.projectNo || 'unknown') + '. Check console for details.', 'error');
         }
       }
+      navigate('/');
 
     } catch (error) {
       console.error("Import Error:", error);

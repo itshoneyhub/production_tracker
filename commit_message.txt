@@ -1,1 +1,1 @@
-fix: Correct date parsing for data import
+fix: Refresh project list after import and improve edit UI

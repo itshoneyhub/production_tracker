@@ -173,12 +173,12 @@ const ProjectList = ({ showAlert }) => {
 
   const handleEdit = (project) => {
     setEditingId(project.id);
-    setEditedStage(project.productionStage); // Set the stage for editing
     setFormData({
         ...project,
         projectDate: new Date(project.projectDate),
         targetDate: new Date(project.targetDate),
     });
+    setIsModalOpen(true);
   };
 
   const handleDelete = async (id) => { // Made async
@@ -329,7 +329,7 @@ const ProjectList = ({ showAlert }) => {
             <div className="form-actions" style={{ justifyContent: 'flex-end' }}>
               {editingId ? (
                 <>
-                  <button type="submit">Save</button>
+                  <button type="submit" style={{ backgroundColor: 'green', color: 'white' }}>Save</button>
                   <button type="button" className='cancel' onClick={handleCancel}>Cancel</button>
                 </>
               ) : (
