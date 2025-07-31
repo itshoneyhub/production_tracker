@@ -10,14 +10,34 @@ const API_BASE_URL = import.meta.env.VITE_APP_BACKEND_URL || '/api';
 
 import { useNavigate } from 'react-router-dom';
 
-const parseDate = (dateString) => {
-  if (!dateString) return null;
-  const parts = dateString.split('-');
-  if (parts.length === 3) {
-    const [day, month, year] = parts;
-    return new Date(year, month - 1, day);
+const parseDate = (dateInput) => {
+  if (!dateInput) {
+    return null;
   }
-  return new Date(dateString);
+
+  if (dateInput instanceof Date) {
+    return !isNaN(dateInput.getTime()) ? dateInput : null;
+  }
+
+  if (typeof dateInput === 'number') {
+    // Excel serial date to JS date
+    const d = new Date(Math.round((dateInput - 25569) * 86400 * 1000));
+    return !isNaN(d.getTime()) ? d : null;
+  }
+
+  if (typeof dateInput === 'string') {
+    const parts = dateInput.split('-');
+    if (parts.length === 3) {
+      const [day, month, year] = parts.map(p => parseInt(p, 10));
+      if (!isNaN(day) && !isNaN(month) && !isNaN(year)) {
+        const d = new Date(year, month - 1, day);
+        return !isNaN(d.getTime()) ? d : null;
+      }
+    }
+  }
+  
+  const d = new Date(dateInput);
+  return isNaN(d.getTime()) ? null : d;
 };
 
 const ImportExport = ({ showAlert }) => {
