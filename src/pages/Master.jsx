@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios'; // Import axios
+import Modal from '../components/Modal';
 
 const API_BASE_URL = import.meta.env.VITE_APP_BACKEND_URL || '/api';
 
@@ -8,6 +9,7 @@ const Master = ({ showAlert }) => {
   const [stageName, setStageName] = useState('');
   const [remarks, setRemarks] = useState('');
   const [editingId, setEditingId] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   // Function to fetch stages from the backend
   const fetchStages = async () => {
@@ -54,12 +56,14 @@ const Master = ({ showAlert }) => {
 
     setStageName('');
     setRemarks('');
+    setIsModalOpen(false);
   };
 
   const handleEdit = (stage) => {
     setEditingId(stage.id);
     setStageName(stage.name);
     setRemarks(stage.remarks);
+    setIsModalOpen(true);
   };
 
   const handleDelete = async (id) => { // Made async
@@ -85,33 +89,39 @@ const Master = ({ showAlert }) => {
   return (
     <div className="page-container">
       <h2>Master (Production Stages)</h2>
-      <div className="form-container">
-        <form onSubmit={handleSubmit}>
-          <div className="form-group">
-            <label>Stage Name</label>
-            <input
-              type="text"
-              value={stageName}
-              onChange={(e) => setStageName(e.target.value)}
-              placeholder="Enter stage name"
-              required
-            />
-          </div>
-          <div className="form-group">
-            <label>Remarks</label>
-            <input
-              type="text"
-              value={remarks}
-              onChange={(e) => setRemarks(e.target.value)}
-              placeholder="Enter remarks"
-            />
-          </div>
-          <div className="form-actions">
-            <button type="submit">{editingId ? 'Update' : '+ Add'}</button>
-            {editingId && <button type="button" className="cancel" onClick={handleCancel}>Cancel</button>}
-          </div>
-        </form>
+      <div className="form-actions">
+        <button type="button" onClick={() => setIsModalOpen(true)} className="add-button">+ Add</button>
       </div>
+
+      <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
+        <div className="form-container">
+          <form onSubmit={handleSubmit}>
+            <div className="form-group">
+              <label>Stage Name</label>
+              <input
+                type="text"
+                value={stageName}
+                onChange={(e) => setStageName(e.target.value)}
+                placeholder="Enter stage name"
+                required
+              />
+            </div>
+            <div className="form-group">
+              <label>Remarks</label>
+              <input
+                type="text"
+                value={remarks}
+                onChange={(e) => setRemarks(e.target.value)}
+                placeholder="Enter remarks"
+              />
+            </div>
+            <div className="form-actions" style={{ justifyContent: 'flex-end' }}>
+              <button type="submit">{editingId ? 'Save' : '+ Add'}</button>
+              <button type="button" className="cancel" onClick={() => { setEditingId(null); setStageName(''); setRemarks(''); setIsModalOpen(false); }}>Cancel</button>
+            </div>
+          </form>
+        </div>
+      </Modal>
 
       <div className="table-container">
         <table>
