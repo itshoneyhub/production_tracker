@@ -1,1 +1,1 @@
-fix: ensure all project queries are quoted
+feat: Implement modal for Add Project form and improve UI

@@ -32,8 +32,11 @@ router.get('/:id', async (req, res) => {
 router.post('/', async (req, res) => {
   const { projectNo, customerName, owner, projectDate, targetDate, productionStage, remarks } = req.body;
   try {
+    const parsedProjectDate = new Date(projectDate);
+    const parsedTargetDate = new Date(targetDate);
+
     await query('INSERT INTO "Projects" ("id", "projectNo", "customerName", "owner", "projectDate", "targetDate", "productionStage", "remarks") VALUES ($1, $2, $3, $4, $5, $6, $7, $8)', 
-      [req.body.id || uuidv4(), projectNo, customerName, owner, projectDate, targetDate, productionStage, remarks]);
+      [req.body.id || uuidv4(), projectNo, customerName, owner, parsedProjectDate, parsedTargetDate, productionStage, remarks]);
     res.status(201).send('Project created');
   } catch (err) {
     res.status(500).send(err.message);
@@ -44,8 +47,11 @@ router.post('/', async (req, res) => {
 router.put('/:id', async (req, res) => {
   const { projectNo, customerName, owner, projectDate, targetDate, productionStage, remarks } = req.body;
   try {
+    const parsedProjectDate = new Date(projectDate);
+    const parsedTargetDate = new Date(targetDate);
+
     const { rowCount } = await query('UPDATE "Projects" SET "projectNo" = $2, "customerName" = $3, "owner" = $4, "projectDate" = $5, "targetDate" = $6, "productionStage" = $7, "remarks" = $8 WHERE "id" = $1', 
-      [req.params.id, projectNo, customerName, owner, projectDate, targetDate, productionStage, remarks]);
+      [req.params.id, projectNo, customerName, owner, parsedProjectDate, parsedTargetDate, productionStage, remarks]);
     if (rowCount > 0) {
       res.send('Project updated');
     } else {

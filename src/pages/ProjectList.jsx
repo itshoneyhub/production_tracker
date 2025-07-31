@@ -6,7 +6,10 @@ import * as XLSX from 'xlsx'; // Import xlsx
 
 const API_BASE_URL = import.meta.env.VITE_APP_BACKEND_URL || '/api';
 
+import Modal from '../components/Modal';
+
 const ProjectList = ({ showAlert }) => {
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [projects, setProjects] = useState([]);
   const [filteredProjects, setFilteredProjects] = useState([]);
   const [stages, setStages] = useState([]);
@@ -239,99 +242,106 @@ const ProjectList = ({ showAlert }) => {
   return (
     <div className="page-container">
       <h2>Project List</h2>
-      <div className="form-container">
-        <form onSubmit={handleSubmit}>
-            <div className="form-grid">
-                <div className="form-group">
-                    <label>Project No</label>
-                    <input
-                    type="text"
-                    name="projectNo"
-                    value={formData.projectNo}
-                    onChange={handleInputChange}
-                    placeholder="Enter project number"
-                    required
-                    />
-                    {projectNoError && <p style={{ color: 'red' }}>{projectNoError}</p>}
-                </div>
-                <div className="form-group">
-                    <label>Customer Name</label>
-                    <input
-                    type="text"
-                    name="customerName"
-                    value={formData.customerName}
-                    onChange={handleInputChange}
-                    placeholder="Enter customer name"
-                    required
-                    />
-                </div>
-                <div className="form-group">
-                    <label>Owner</label>
-                    <input
-                    type="text"
-                    name="owner"
-                    value={formData.owner}
-                    onChange={handleInputChange}
-                    placeholder="Enter owner name"
-                    required
-                    />
-                </div>
-                <div className="form-group">
-                    <label>Project Date</label>
-                    <DatePicker
-                    selected={formData.projectDate}
-                    onChange={(date) => handleDateChange(date, 'projectDate')}
-                    />
-                </div>
-                <div className="form-group">
-                    <label>Target Date</label>
-                    <DatePicker
-                    selected={formData.targetDate}
-                    onChange={(date) => handleDateChange(date, 'targetDate')}
-                    />
-                </div>
-                <div className="form-group">
-                    <label>Production Stage</label>
-                    <select
-                    name="productionStage"
-                    value={formData.productionStage}
-                    onChange={handleInputChange}
-                    required
-                    >
-                    <option value="">Select Stage</option>
-                    {stages.map((stage) => (
-                        <option key={stage.id} value={stage.name}>
-                          {stage.name}
-                        </option>
-                    ))}
-                    </select>
-                </div>
-                <div className="form-group">
-                    <label>Remarks</label>
-                    <input
-                    type="text"
-                    name="remarks"
-                    value={formData.remarks}
-                    onChange={handleInputChange}
-                    placeholder="Enter remarks"
-                    />
-                </div>
-            </div>
-          <div className="form-actions" style={{ justifyContent: 'flex-end' }}>
-            {editingId ? (
-              <>
-                <button type="submit">Save</button>
-                <button type="button" className='cancel' onClick={handleCancel}>Cancel</button>
-              </>
-            ) : (
-              <>
-                <button type="submit" className="add-button">+ Add</button>
-                <button type="button" onClick={handleDownloadExcel}>Download Excel</button>
-              </>
-            )}
-          </div>
-        </form>
+      <div className="form-actions" style={{ justifyContent: 'flex-end' }}>
+        <button type="button" onClick={() => setIsModalOpen(true)} className="add-button">+ Add</button>
+        <button type="button" onClick={handleDownloadExcel}>Download Excel</button>
       </div>
+
+      <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
+        <div className="form-container">
+          <form onSubmit={handleSubmit}>
+              <div className="form-grid">
+                  <div className="form-group">
+                      <label>Project No</label>
+                      <input
+                      type="text"
+                      name="projectNo"
+                      value={formData.projectNo}
+                      onChange={handleInputChange}
+                      placeholder="Enter project number"
+                      required
+                      />
+                      {projectNoError && <p style={{ color: 'red' }}>{projectNoError}</p>}
+                  </div>
+                  <div className="form-group">
+                      <label>Customer Name</label>
+                      <input
+                      type="text"
+                      name="customerName"
+                      value={formData.customerName}
+                      onChange={handleInputChange}
+                      placeholder="Enter customer name"
+                      required
+                      />
+                  </div>
+                  <div className="form-group">
+                      <label>Owner</label>
+                      <input
+                      type="text"
+                      name="owner"
+                      value={formData.owner}
+                      onChange={handleInputChange}
+                      placeholder="Enter owner name"
+                      required
+                      />
+                  </div>
+                  <div className="form-group">
+                      <label>Project Date</label>
+                      <DatePicker
+                      selected={formData.projectDate}
+                      onChange={(date) => handleDateChange(date, 'projectDate')}
+                      />
+                  </div>
+                  <div className="form-group">
+                      <label>Target Date</label>
+                      <DatePicker
+                      selected={formData.targetDate}
+                      onChange={(date) => handleDateChange(date, 'targetDate')}
+                      />
+                  </div>
+                  <div className="form-group">
+                      <label>Production Stage</label>
+                      <select
+                      name="productionStage"
+                      value={formData.productionStage}
+                      onChange={handleInputChange}
+                      required
+                      >
+                      <option value="">Select Stage</option>
+                      {stages.map((stage) => (
+                          <option key={stage.id} value={stage.name}>
+                            {stage.name}
+                          </option>
+                      ))}
+                      </select>
+                  </div>
+                  <div className="form-group">
+                      <label>Remarks</label>
+                      <input
+                      type="text"
+                      name="remarks"
+                      value={formData.remarks}
+                      onChange={handleInputChange}
+                      placeholder="Enter remarks"
+                      />
+                  </div>
+              </div>
+            <div className="form-actions" style={{ justifyContent: 'flex-end' }}>
+              {editingId ? (
+                <>
+                  <button type="submit">Save</button>
+                  <button type="button" className='cancel' onClick={handleCancel}>Cancel</button>
+                </>
+              ) : (
+                <>
+                  <button type="submit" className="add-button">+ Add</button>
+                  <button type="button" onClick={() => setIsModalOpen(false)} className='cancel'>Cancel</button>
+                </>
+              )}
+            </div>
+          </form>
+        </div>
+      </Modal>
 
       <div className="filter-container">
         <div className="filter-buttons">
