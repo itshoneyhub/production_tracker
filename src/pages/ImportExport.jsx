@@ -10,6 +10,16 @@ const API_BASE_URL = import.meta.env.VITE_APP_BACKEND_URL || '/api';
 
 import { useNavigate } from 'react-router-dom';
 
+const parseDate = (dateString) => {
+  if (!dateString) return null;
+  const parts = dateString.split('-');
+  if (parts.length === 3) {
+    const [day, month, year] = parts;
+    return new Date(year, month - 1, day);
+  }
+  return new Date(dateString);
+};
+
 const ImportExport = ({ showAlert }) => {
   const navigate = useNavigate();
   
@@ -76,7 +86,7 @@ const ImportExport = ({ showAlert }) => {
         const project = {};
         headers.forEach((header, index) => {
           if (header === 'Project Date' || header === 'Target Date') {
-            project[header] = row[index] ? new Date(row[index]) : null;
+            project[header] = parseDate(row[index]);
           } else {
             project[header] = row[index];
           }
@@ -148,8 +158,8 @@ const ImportExport = ({ showAlert }) => {
           projectNo: row['Project No'] || '',
           customerName: row['Customer Name'] || '',
           owner: row['Owner'] || '',
-          projectDate: row['Project Date'] ? new Date(row['Project Date']) : null,
-          targetDate: row['Target Date'] ? new Date(row['Target Date']) : null,
+          projectDate: parseDate(row['Project Date']),
+          targetDate: parseDate(row['Target Date']),
           productionStage: row['Production Stage'] || '',
           remarks: row['Remarks'] || '',
       }));
