@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import axios from 'axios'; // Import axios
@@ -15,6 +15,7 @@ const ProjectList = ({ showAlert }) => {
   const [stages, setStages] = useState([]);
   const [formData, setFormData] = useState({
     projectNo: '',
+    projectName: '',
     customerName: '',
     projectDate: new Date(),
     targetDate: new Date(),
@@ -26,6 +27,10 @@ const ProjectList = ({ showAlert }) => {
   const [editedStage, setEditedStage] = useState('');
   const [projectNoError, setProjectNoError] = useState('');
   const [filter, setFilter] = useState('All');
+  const [projectNoFilter, setProjectNoFilter] = useState('');
+  const [customerFilter, setCustomerFilter] = useState('');
+  const [ownerFilter, setOwnerFilter] = useState('');
+  const [dispatchMonthFilter, setDispatchMonthFilter] = useState('');
 
   // Calculate current fiscal year start and end dates
   const getFiscalYearDates = () => {
@@ -48,32 +53,31 @@ const ProjectList = ({ showAlert }) => {
   const recordsPerPage = 25;
 
   // Function to fetch projects from the backend
-  const fetchProjects = async () => {
+  const fetchProjects = useCallback(async () => {
     try {
       const response = await axios.get(`${API_BASE_URL}/projects`);
       setProjects(response.data);
       setFilteredProjects(response.data);
     } catch (error) {
-      console.error('Error fetching projects:', error);
+      console.error("Error fetching projects:", error);
       showAlert('Error fetching projects.', 'error');
     }
-  };
+  }, [showAlert]);
 
-  // Function to fetch stages from the backend
-  const fetchStages = async () => {
+  const fetchStages = useCallback(async () => {
     try {
       const response = await axios.get(`${API_BASE_URL}/stages`);
       setStages(response.data);
     } catch (error) {
-      console.error('Error fetching stages:', error);
+      console.error("Error fetching stages:", error);
       showAlert('Error fetching stages.', 'error');
     }
-  };
+  }, [showAlert]);
 
   useEffect(() => {
     fetchProjects();
     fetchStages();
-  }, []); // Fetch data on component mount
+  }, [fetchProjects, fetchStages]); // Fetch data on component mount
 
   useEffect(() => {
     let filtered = projects;
@@ -86,9 +90,29 @@ const ProjectList = ({ showAlert }) => {
         return projectDate >= startDate && projectDate <= endDate;
       });
     }
+    if (projectNoFilter) {
+      filtered = filtered.filter((project) =>
+        project.projectNo.toLowerCase().includes(projectNoFilter.toLowerCase())
+      );
+    }
+    if (customerFilter) {
+      filtered = filtered.filter((project) =>
+        project.customerName.toLowerCase().includes(customerFilter.toLowerCase())
+      );
+    }
+    if (ownerFilter) {
+      filtered = filtered.filter((project) =>
+        project.owner.toLowerCase().includes(ownerFilter.toLowerCase())
+      );
+    }
+    if (dispatchMonthFilter) {
+      filtered = filtered.filter((project) =>
+        project.dispatchMonth.toLowerCase().includes(dispatchMonthFilter.toLowerCase())
+      );
+    }
     setFilteredProjects(filtered);
     setCurrentPage(1); // Reset to first page on filter change
-  }, [filter, startDate, endDate, projects]);
+  }, [filter, startDate, endDate, projects, projectNoFilter, customerFilter, ownerFilter, dispatchMonthFilter]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -105,10 +129,18 @@ const ProjectList = ({ showAlert }) => {
   };
 
   const handleDateChange = (date, name) => {
-    setFormData({ ...formData, [name]: date });
+    const newFormData = { ...formData, [name]: date };
+
+    if (name === 'targetDate') {
+      const month = date.toLocaleString('default', { month: 'long' });
+      const year = date.getFullYear();
+      newFormData.dispatchMonth = `${month} ${year}`;
+    }
+
+    setFormData(newFormData);
   };
 
-  const handleSubmit = async (e) => { // Made async
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     const projectNoTrimmed = formData.projectNo.trim();
@@ -118,7 +150,6 @@ const ProjectList = ({ showAlert }) => {
     }
 
     if (editingId) {
-      // When editing, check for duplicates excluding the current project
       const isDuplicate = projects.some(p => p.id !== editingId && p.projectNo.trim() === projectNoTrimmed);
       if (isDuplicate) {
         showAlert('Project is already available in the List.', 'error');
@@ -128,40 +159,37 @@ const ProjectList = ({ showAlert }) => {
       const confirmUpdate = window.confirm("Are you sure you want to update this project?");
       if (confirmUpdate) {
         try {
-          await axios.put(`${API_BASE_URL}/projects/${editingId}`, { 
-            ...formData, 
-            projectNo: projectNoTrimmed, 
-            productionStage: editedStage // Use editedStage for update
-          });
+          const response = await axios.put(`${API_BASE_URL}/projects/${editingId}`, { ...formData, projectNo: projectNoTrimmed });
+          setProjects(projects.map((p) =>
+            p.id === editingId ? response.data : p
+          ));
           showAlert('Project updated successfully!', 'success');
-          fetchProjects(); // Re-fetch projects to update the list
-        } catch (error) {
-          console.error('Error updating project:', error);
-          showAlert('Error updating project.', 'error');
-        } finally {
           setEditingId(null);
           setEditedStage('');
+        } catch (error) {
+          console.error("Error updating project:", error);
+          showAlert('Error updating project.', 'error');
         }
       }
     } else {
-      // When adding, check all projects for duplicates
       const isDuplicate = projects.some(project => project.projectNo.trim() === projectNoTrimmed);
       if (isDuplicate) {
         showAlert('Project is already available in the List.', 'error');
         return;
       }
       try {
-        await axios.post(`${API_BASE_URL}/projects`, { ...formData, projectNo: projectNoTrimmed });
+        const response = await axios.post(`${API_BASE_URL}/projects`, { ...formData, projectNo: projectNoTrimmed });
+        setProjects([...projects, response.data]);
         showAlert('Project created successfully!', 'success');
-        fetchProjects(); // Re-fetch projects to update the list
       } catch (error) {
-        console.error('Error creating project:', error);
+        console.error("Error creating project:", error);
         showAlert('Error creating project.', 'error');
       }
     }
 
     setFormData({
       projectNo: '',
+      projectName: '',
       customerName: '',
       projectDate: new Date(),
       targetDate: new Date(),
@@ -173,23 +201,36 @@ const ProjectList = ({ showAlert }) => {
 
   const handleEdit = (project) => {
     setEditingId(project.id);
+    const projectDate = new Date(project.projectDate);
+    const targetDate = new Date(project.targetDate);
+    let dispatchMonth = project.dispatchMonth;
+
+    // Recalculate dispatchMonth if targetDate exists
+    if (targetDate && !isNaN(targetDate.getTime())) {
+      const month = targetDate.toLocaleString('default', { month: 'long' });
+      const year = targetDate.getFullYear();
+      dispatchMonth = `${month} ${year}`;
+    }
+
     setFormData({
         ...project,
-        projectDate: new Date(project.projectDate),
-        targetDate: new Date(project.targetDate),
+        projectDate: projectDate,
+        targetDate: targetDate,
+        dispatchMonth: dispatchMonth,
     });
+    setEditedStage(project.productionStage);
     setIsModalOpen(true);
   };
 
-  const handleDelete = async (id) => { // Made async
+  const handleDelete = async (id) => {
     const confirmDelete = window.confirm("Are you sure you want to delete this project?");
     if (confirmDelete) {
       try {
         await axios.delete(`${API_BASE_URL}/projects/${id}`);
+        setProjects(projects.filter((project) => project.id !== id));
         showAlert('Project deleted successfully!', 'success');
-        fetchProjects(); // Re-fetch projects to update the list
       } catch (error) {
-        console.error('Error deleting project:', error);
+        console.error("Error deleting project:", error);
         showAlert('Error deleting project.', 'error');
       }
     }
@@ -200,6 +241,7 @@ const ProjectList = ({ showAlert }) => {
     setEditedStage(''); // Reset edited stage
     setFormData({
         projectNo: '',
+        projectName: '',
         customerName: '',
         projectDate: new Date(),
         targetDate: new Date(),
@@ -225,10 +267,12 @@ const ProjectList = ({ showAlert }) => {
     const data = filteredProjects.map(project => ({
       "Sr. No": filteredProjects.indexOf(project) + 1,
       "Project No": project.projectNo,
+      "Project Name": project.projectName,
       "Customer Name": project.customerName,
       "Owner": project.owner,
       "Project Date": new Date(project.projectDate).toLocaleDateString(navigator.language),
       "Target Date": new Date(project.targetDate).toLocaleDateString(navigator.language),
+      "Dispatch Month": project.dispatchMonth,
       "Production Stage": project.productionStage,
       "Remarks": project.remarks,
     }));
@@ -264,6 +308,16 @@ const ProjectList = ({ showAlert }) => {
                       {projectNoError && <p style={{ color: 'red' }}>{projectNoError}</p>}
                   </div>
                   <div className="form-group">
+                      <label>Project Name</label>
+                      <input
+                      type="text"
+                      name="projectName"
+                      value={formData.projectName}
+                      onChange={handleInputChange}
+                      placeholder="Enter project name"
+                      />
+                  </div>
+                  <div className="form-group">
                       <label>Customer Name</label>
                       <input
                       type="text"
@@ -297,6 +351,15 @@ const ProjectList = ({ showAlert }) => {
                       <DatePicker
                       selected={formData.targetDate}
                       onChange={(date) => handleDateChange(date, 'targetDate')}
+                      />
+                  </div>
+                  <div className="form-group">
+                      <label>Dispatch Month</label>
+                      <input
+                      type="text"
+                      name="dispatchMonth"
+                      value={formData.dispatchMonth}
+                      readOnly
                       />
                   </div>
                   <div className="form-group">
@@ -344,39 +407,107 @@ const ProjectList = ({ showAlert }) => {
       </Modal>
 
       <div className="filter-container">
-        <div className="filter-buttons">
-            <button className={filter === 'All' ? 'active' : ''} onClick={() => setFilter('All')}>All</button>
-            {stages.map((stage) => (
-            <button key={stage.id} className={filter === stage.name ? 'active' : ''} onClick={() => setFilter(stage.name)}>
-                {stage.name}
-            </button>
-            ))}
+        <div className="filter-row">
+          <div className="filter-group">
+            <label htmlFor="projectNoFilter">Project No</label>
+            <input
+              type="text"
+              id="projectNoFilter"
+              value={projectNoFilter}
+              onChange={(e) => setProjectNoFilter(e.target.value)}
+              placeholder="Filter by Project No"
+              list="projectNoOptions"
+            />
+            <datalist id="projectNoOptions">
+              {[...new Set(projects.map((p) => p.projectNo))].map((projectNo) => (
+                <option key={projectNo} value={projectNo} />
+              ))}
+            </datalist>
+          </div>
+          <div className="filter-group">
+            <label htmlFor="customerFilter">Customer</label>
+            <input
+              type="text"
+              id="customerFilter"
+              value={customerFilter}
+              onChange={(e) => setCustomerFilter(e.target.value)}
+              placeholder="Filter by Customer"
+              list="customerOptions"
+            />
+            <datalist id="customerOptions">
+              {[...new Set(projects.map((p) => p.customerName))].map((customerName) => (
+                <option key={customerName} value={customerName} />
+              ))}
+            </datalist>
+          </div>
+          <div className="filter-group">
+            <label htmlFor="ownerFilter">Owner</label>
+            <input
+              type="text"
+              id="ownerFilter"
+              value={ownerFilter}
+              onChange={(e) => setOwnerFilter(e.target.value)}
+              placeholder="Filter by Owner"
+              list="ownerOptions"
+            />
+            <datalist id="ownerOptions">
+              {[...new Set(projects.map((p) => p.owner))].map((owner) => (
+                <option key={owner} value={owner} />
+              ))}
+            </datalist>
+          </div>
+          <div className="filter-group">
+            <label htmlFor="dispatchMonthFilter">Dispatch Month</label>
+            <select
+              id="dispatchMonthFilter"
+              value={dispatchMonthFilter}
+              onChange={(e) => setDispatchMonthFilter(e.target.value)}
+            >
+              <option value="">All</option>
+              {[...new Set(projects.map((p) => p.dispatchMonth))].map((dispatchMonth) => (
+                <option key={dispatchMonth} value={dispatchMonth}>
+                  {dispatchMonth}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="filter-group">
+            <label htmlFor="startDate">From:</label>
+            <DatePicker
+              id="startDate"
+              selected={startDate}
+              onChange={(date) => setStartDate(date)}
+              selectsStart
+              startDate={startDate}
+              endDate={endDate}
+              placeholderText="Start Date"
+            />
+          </div>
+          <div className="filter-group">
+            <label htmlFor="endDate">To:</label>
+            <DatePicker
+              id="endDate"
+              selected={endDate}
+              onChange={(date) => setEndDate(date)}
+              selectsEnd
+              startDate={startDate}
+              endDate={endDate}
+              placeholderText="End Date"
+            />
+          </div>
         </div>
-        <div className="date-filters">
-            <div className="date-filter-group">
-                <label htmlFor="startDate">From:</label>
-                <DatePicker
-                    id="startDate"
-                    selected={startDate}
-                    onChange={(date) => setStartDate(date)}
-                    selectsStart
-                    startDate={startDate}
-                    endDate={endDate}
-                    placeholderText="Start Date"
-                />
+        <div className="filter-row">
+          <div className="filter-group">
+            <label>Production Stage</label>
+            <div className="filter-buttons">
+              <button className={filter === 'All' ? 'active' : ''} onClick={() => setFilter('All')}>All</button>
+              {stages.map((stage) => (
+                <button key={stage.id} className={filter === stage.name ? 'active' : ''} onClick={() => setFilter(stage.name)}>
+                  {stage.name}
+                </button>
+              ))}
             </div>
-            <div className="date-filter-group">
-                <label htmlFor="endDate">To:</label>
-                <DatePicker
-                    id="endDate"
-                    selected={endDate}
-                    onChange={(date) => setEndDate(date)}
-                    selectsEnd
-                    startDate={startDate}
-                    endDate={endDate}
-                    placeholderText="End Date"
-                />
-            </div>
+          </div>
         </div>
       </div>
 
@@ -385,14 +516,16 @@ const ProjectList = ({ showAlert }) => {
           <thead>
             <tr>
               <th className="sr-no-column">Sr. No</th>
-              <th className="project-no-column">Project No</th>
-              <th className="customer-name-column">Customer Name</th>
-              <th className="owner-column">Owner</th>
-              <th className="project-date-column">Project Date</th>
-              <th className="target-date-column">Target Date</th>
-              <th className="production-stage-column">Production Stage</th>
-              <th className="remarks-column">Remarks</th>
-              <th className="actions-column">Actions</th>
+              <th class="project-no-column">Project No</th>
+              <th class="project-name-column">Project Name</th>
+              <th class="customer-name-column">Customer Name</th>
+              <th class="owner-column">Owner</th>
+              <th class="project-date-column">Project Date</th>
+              <th class="target-date-column">Target Date</th>
+              <th class="dispatch-month-column">Dispatch Month</th>
+              <th class="production-stage-column">Production Stage</th>
+              <th class="remarks-column">Remarks</th>
+              <th class="actions-column">Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -400,10 +533,12 @@ const ProjectList = ({ showAlert }) => {
               <tr key={project.id}>
                 <td data-label="Sr. No" className="text-center">{firstRecordIndex + index + 1}</td>
                 <td data-label="Project No">{project.projectNo}</td>
+                <td data-label="Project Name">{project.projectName}</td>
                 <td data-label="Customer Name">{project.customerName}</td>
                 <td data-label="Owner">{project.owner}</td>
-                <td data-label="Project Date">{new Date(project.projectDate).toLocaleDateString(undefined, { day: '2-digit', month: 'short', year: 'numeric' })}</td>
-                <td data-label="Target Date">{new Date(project.targetDate).toLocaleDateString(undefined, { day: '2-digit', month: 'short', year: 'numeric' })}</td>
+                <td data-label="Project Date">{project.projectDate ? new Date(project.projectDate).toLocaleDateString(undefined, { day: '2-digit', month: 'short', year: 'numeric' }) : ''}</td>
+                <td data-label="Target Date">{project.targetDate ? new Date(project.targetDate).toLocaleDateString(undefined, { day: '2-digit', month: 'short', year: 'numeric' }) : ''}</td>
+                <td data-label="Dispatch Month">{project.dispatchMonth}</td>
                 <td data-label="Production Stage">
                   {editingId === project.id ? (
                     <select

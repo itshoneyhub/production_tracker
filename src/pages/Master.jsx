@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios'; // Import axios
 import Modal from '../components/Modal';
 
@@ -12,44 +12,43 @@ const Master = ({ showAlert }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   // Function to fetch stages from the backend
-  const fetchStages = async () => {
+  const fetchStages = useCallback(async () => {
     try {
       const response = await axios.get(`${API_BASE_URL}/stages`);
       setStages(response.data);
     } catch (error) {
-      console.error('Error fetching stages:', error);
+      console.error("Error fetching stages:", error);
       showAlert('Error fetching stages.', 'error');
     }
-  };
+  }, []);
 
   useEffect(() => {
     fetchStages();
-  }, []); // Fetch stages on component mount
+  }, [fetchStages]); // Fetch stages on component mount
 
-  const handleSubmit = async (e) => { // Made async
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!stageName) return;
 
     if (editingId) {
-      // Update existing stage
       try {
-        await axios.put(`${API_BASE_URL}/stages/${editingId}`, { name: stageName.trim(), remarks });
+        const response = await axios.put(`${API_BASE_URL}/stages/${editingId}`, { name: stageName.trim(), remarks });
+        setStages(stages.map((stage) =>
+          stage.id === editingId ? response.data : stage
+        ));
         showAlert('Stage updated successfully!', 'success');
-        fetchStages(); // Re-fetch stages to update the list
-      } catch (error) {
-        console.error('Error updating stage:', error);
-        showAlert('Error updating stage.', 'error');
-      } finally {
         setEditingId(null);
+      } catch (error) {
+        console.error("Error updating stage:", error);
+        showAlert('Error updating stage.', 'error');
       }
     } else {
-      // Add new stage
       try {
-        await axios.post(`${API_BASE_URL}/stages`, { name: stageName.trim(), remarks });
+        const response = await axios.post(`${API_BASE_URL}/stages`, { name: stageName.trim(), remarks });
+        setStages([...stages, response.data]);
         showAlert('Stage created successfully!', 'success');
-        fetchStages(); // Re-fetch stages to update the list
       } catch (error) {
-        console.error('Error creating stage:', error);
+        console.error("Error creating stage:", error);
         showAlert('Error creating stage.', 'error');
       }
     }
@@ -66,17 +65,13 @@ const Master = ({ showAlert }) => {
     setIsModalOpen(true);
   };
 
-  const handleDelete = async (id) => { // Made async
+  const handleDelete = (id) => {
     const confirmDelete = window.confirm("Are you sure you want to delete this stage?");
     if (confirmDelete) {
-      try {
-        await axios.delete(`${API_BASE_URL}/stages/${id}`);
-        showAlert('Stage deleted successfully!', 'success');
-        fetchStages(); // Re-fetch stages to update the list
-      } catch (error) {
-        console.error('Error deleting stage:', error);
-        showAlert('Error deleting stage.', 'error');
-      }
+      const updatedStages = stages.filter((stage) => stage.id !== id);
+      setStages(updatedStages);
+      
+      showAlert('Stage deleted successfully!', 'success');
     }
   };
   
@@ -84,6 +79,7 @@ const Master = ({ showAlert }) => {
     setEditingId(null);
     setStageName('');
     setRemarks('');
+    setIsModalOpen(false);
   }
 
   return (
@@ -117,7 +113,7 @@ const Master = ({ showAlert }) => {
             </div>
             <div className="form-actions" style={{ justifyContent: 'flex-end' }}>
               <button type="submit" style={{ backgroundColor: editingId ? 'green' : '' }}>{editingId ? 'Save' : '+ Add'}</button>
-              <button type="button" className="cancel" onClick={() => { setEditingId(null); setStageName(''); setRemarks(''); setIsModalOpen(false); }}>Cancel</button>
+              <button type="button" className="cancel" onClick={handleCancel}>Cancel</button>
             </div>
           </form>
         </div>

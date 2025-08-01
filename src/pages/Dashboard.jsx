@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import axios from 'axios'; // Import axios
+
 
 const API_BASE_URL = import.meta.env.VITE_APP_BACKEND_URL || '/api';
 
@@ -12,21 +12,27 @@ const Dashboard = () => {
   // Function to fetch projects from the backend
   const fetchProjects = async () => {
     try {
-      const response = await axios.get(`${API_BASE_URL}/projects`);
-      setProjects(response.data);
+      const response = await fetch(`${API_BASE_URL}/projects`);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const data = await response.json();
+      setProjects(data);
     } catch (error) {
-      console.error('Error fetching projects:', error);
+      console.error("Error fetching projects:", error);
     }
   };
 
-  // Function to fetch stages from the backend
   const fetchStages = async () => {
     try {
-      const response = await axios.get(`${API_BASE_URL}/stages`);
-      
-      setStages(response.data.map(s => ({...s, name: s.name.trim()})));
+      const response = await fetch(`${API_BASE_URL}/stages`);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const data = await response.json();
+      setStages(data.map(s => ({...s, name: s.name.trim()})));
     } catch (error) {
-      console.error('Error fetching stages:', error);
+      console.error("Error fetching stages:", error);
     }
   };
 
@@ -78,20 +84,24 @@ const Dashboard = () => {
             <thead>
               <tr>
                 <th>Project No</th>
+                <th>Project Name</th>
                 <th>Customer Name</th>
                 <th>Owner</th>
                 <th>Project Date</th>
                 <th>Target Date</th>
+                <th>Dispatch Month</th>
               </tr>
             </thead>
             <tbody>
               {projectsToShow.map((project) => (
                 <tr key={project.id}>
                   <td>{project.projectNo}</td>
+                  <td>{project.projectName}</td>
                   <td>{project.customerName}</td>
                   <td>{project.owner}</td>
-                  <td>{new Date(project.projectDate).toLocaleDateString(undefined, { day: '2-digit', month: 'short', year: 'numeric' })}</td>
-                  <td>{new Date(project.targetDate).toLocaleDateString(undefined, { day: '2-digit', month: 'short', year: 'numeric' })}</td>
+                  <td>{project.projectDate ? new Date(project.projectDate).toLocaleDateString(undefined, { day: '2-digit', month: 'short', year: 'numeric' }) : ''}</td>
+                  <td>{project.targetDate ? new Date(project.targetDate).toLocaleDateString(undefined, { day: '2-digit', month: 'short', year: 'numeric' }) : ''}</td>
+                  <td>{project.dispatchMonth}</td>
                 </tr>
               ))}
             </tbody>

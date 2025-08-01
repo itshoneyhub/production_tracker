@@ -1,16 +1,18 @@
 CREATE TABLE Projects (
-    id NVARCHAR(255) PRIMARY KEY,
-    projectNo NVARCHAR(255) NOT NULL,
-    customerName NVARCHAR(255) NOT NULL,
-    owner NVARCHAR(255) NOT NULL,
+    id VARCHAR(255) PRIMARY KEY,
+    projectNo VARCHAR(255) NOT NULL,
+    projectName VARCHAR(255),
+    customerName VARCHAR(255) NOT NULL,
+    owner VARCHAR(255) NOT NULL,
     projectDate DATE NOT NULL,
     targetDate DATE NOT NULL,
-    productionStage NVARCHAR(255) NOT NULL,
-    remarks NVARCHAR(MAX)
+    dispatchMonth VARCHAR(255),
+    productionStage VARCHAR(255) NOT NULL,
+    remarks TEXT
 );
 
 CREATE TABLE Stages (
-    id NVARCHAR(255) PRIMARY KEY,
-    name NVARCHAR(255) NOT NULL,
-    remarks NVARCHAR(MAX)
+    id VARCHAR(255) PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    remarks TEXT
 );
