@@ -1,13 +1,14 @@
 const express = require('express');
 const router = express.Router();
-const { query } = require('../db');
+const { sql, poolPromise } = require('../db');
 const { v4: uuidv4 } = require('uuid');
 
 // GET all projects
 router.get('/', async (req, res) => {
   try {
-    const { rows } = await query('SELECT "id", "projectNo", "projectName", "customerName", "owner", "projectDate", "targetDate", "dispatchMonth", "productionStage", "remarks" FROM "Projects"');
-    res.json(rows);
+    const pool = await poolPromise;
+    const result = await pool.request().query('SELECT id, projectNo, projectName, customerName, owner, projectDate, targetDate, dispatchMonth, productionStage, remarks FROM Projects');
+    res.json(result.recordset);
   } catch (err) {
     console.error('Error fetching projects:', err);
     res.status(500).send(err.message);
@@ -17,9 +18,12 @@ router.get('/', async (req, res) => {
 // GET a single project by ID
 router.get('/:id', async (req, res) => {
   try {
-    const { rows } = await query('SELECT * FROM "Projects" WHERE "id" = $1', [req.params.id]);
-    if (rows.length > 0) {
-      res.json(rows[0]);
+    const pool = await poolPromise;
+    const result = await pool.request()
+      .input('id', sql.UniqueIdentifier, req.params.id)
+      .query('SELECT * FROM Projects WHERE id = @id');
+    if (result.recordset.length > 0) {
+      res.json(result.recordset[0]);
     } else {
       res.status(404).send('Project not found');
     }
@@ -34,9 +38,19 @@ router.post('/', async (req, res) => {
   try {
     const parsedProjectDate = projectDate ? new Date(projectDate) : null;
     const parsedTargetDate = targetDate ? new Date(targetDate) : null;
-
-    await query('INSERT INTO "Projects" ("id", "projectNo", "projectName", "customerName", "owner", "projectDate", "targetDate", "dispatchMonth", "productionStage", "remarks") VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)', 
-      [req.body.id || uuidv4(), projectNo, projectName, customerName, owner, parsedProjectDate, parsedTargetDate, dispatchMonth, productionStage, remarks]);
+    const pool = await poolPromise;
+    await pool.request()
+      .input('id', sql.UniqueIdentifier, req.body.id || uuidv4())
+      .input('projectNo', sql.NVarChar, projectNo)
+      .input('projectName', sql.NVarChar, projectName)
+      .input('customerName', sql.NVarChar, customerName)
+      .input('owner', sql.NVarChar, owner)
+      .input('projectDate', sql.Date, parsedProjectDate)
+      .input('targetDate', sql.Date, parsedTargetDate)
+      .input('dispatchMonth', sql.NVarChar, dispatchMonth)
+      .input('productionStage', sql.NVarChar, productionStage)
+      .input('remarks', sql.NVarChar, remarks)
+      .query('INSERT INTO Projects (id, projectNo, projectName, customerName, owner, projectDate, targetDate, dispatchMonth, productionStage, remarks) VALUES (@id, @projectNo, @projectName, @customerName, @owner, @projectDate, @targetDate, @dispatchMonth, @productionStage, @remarks)');
     res.status(201).send('Project created');
   } catch (err) {
     res.status(500).send(err.message);
@@ -49,10 +63,20 @@ router.put('/:id', async (req, res) => {
   try {
     const parsedProjectDate = projectDate ? new Date(projectDate) : null;
     const parsedTargetDate = targetDate ? new Date(targetDate) : null;
-
-    const { rowCount } = await query('UPDATE "Projects" SET "projectNo" = $2, "projectName" = $3, "customerName" = $4, "owner" = $5, "projectDate" = $6, "targetDate" = $7, "dispatchMonth" = $8, "productionStage" = $9, "remarks" = $10 WHERE "id" = $1', 
-      [req.params.id, projectNo, projectName, customerName, owner, parsedProjectDate, parsedTargetDate, dispatchMonth, productionStage, remarks]);
-    if (rowCount > 0) {
+    const pool = await poolPromise;
+    const result = await pool.request()
+      .input('id', sql.UniqueIdentifier, req.params.id)
+      .input('projectNo', sql.NVarChar, projectNo)
+      .input('projectName', sql.NVarChar, projectName)
+      .input('customerName', sql.NVarChar, customerName)
+      .input('owner', sql.NVarChar, owner)
+      .input('projectDate', sql.Date, parsedProjectDate)
+      .input('targetDate', sql.Date, parsedTargetDate)
+      .input('dispatchMonth', sql.NVarChar, dispatchMonth)
+      .input('productionStage', sql.NVarChar, productionStage)
+      .input('remarks', sql.NVarChar, remarks)
+      .query('UPDATE Projects SET projectNo = @projectNo, projectName = @projectName, customerName = @customerName, owner = @owner, projectDate = @projectDate, targetDate = @targetDate, dispatchMonth = @dispatchMonth, productionStage = @productionStage, remarks = @remarks WHERE id = @id');
+    if (result.rowsAffected[0] > 0) {
       res.send('Project updated');
     } else {
       res.status(404).send('Project not found');
@@ -65,8 +89,11 @@ router.put('/:id', async (req, res) => {
 // DELETE a project
 router.delete('/:id', async (req, res) => {
   try {
-    const { rowCount } = await query('DELETE FROM "Projects" WHERE "id" = $1', [req.params.id]);
-    if (rowCount > 0) {
+    const pool = await poolPromise;
+    const result = await pool.request()
+      .input('id', sql.UniqueIdentifier, req.params.id)
+      .query('DELETE FROM Projects WHERE id = @id');
+    if (result.rowsAffected[0] > 0) {
       res.send('Project deleted');
     } else {
       res.status(404).send('Project not found');

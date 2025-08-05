@@ -10,3 +10,28 @@ Currently, two official plugins are available:
 ## Expanding the ESLint configuration
 
 If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+
+## Backend Setup
+
+To run the backend server, follow these steps:
+
+1.  Navigate to the `backend` directory:
+    ```sh
+    cd backend
+    ```
+
+2.  Install the dependencies:
+    ```sh
+    npm install
+    ```
+
+3.  Create a `.env` file in the `backend` directory and add the following environment variables:
+    ```
+    AZURE_SQL_SERVER=ditapv-server.database.windows.net
+    AZURE_SQL_DATABASE=DitapV
+    ```
+
+4.  Start the backend server:
+    ```sh
+    npm start
+    ```

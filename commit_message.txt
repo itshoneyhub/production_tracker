@@ -1,1 +1,1 @@
-feat: Increase table header width and font size for better readability
+Re-integrated SQL-based functionality and removed localStorage code.
