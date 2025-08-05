@@ -1,1 +1,1 @@
-Re-integrated SQL-based functionality and removed localStorage code.
+feat: Integrate Azure SQL Database and configure deployment
