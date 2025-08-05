@@ -2,8 +2,11 @@ const sql = require('mssql');
 require('dotenv').config();
 
 const config = {
-  user: process.env.AZURE_SQL_USER,
-  password: process.env.AZURE_SQL_PASSWORD,
+  // user: process.env.AZURE_SQL_USER,
+  // password: process.env.AZURE_SQL_PASSWORD,
+  authentication: {
+    type: 'azure-active-directory-default'
+  },
   server: process.env.AZURE_SQL_SERVER,
   database: process.env.AZURE_SQL_DATABASE,
   options: {
