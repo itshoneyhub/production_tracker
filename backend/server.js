@@ -7,7 +7,7 @@ const path = require('path');
 const { poolPromise } = require('./db');
 
 const app = express();
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5001;
 
 // Middleware
 app.use(cors());
@@ -24,6 +24,7 @@ app.get('/api/test-db', async (req, res) => {
     const result = await pool.request().query('SELECT 1 AS number');
     res.json(result.recordset);
   } catch (err) {
+    console.error('Database connection error:', err);
     res.status(500).send({ message: err.message });
   }
 });
@@ -35,6 +36,11 @@ app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, '../dist', 'index.html'));
 });
 
+app.use((err, req, res, next) => {
+  console.error('Unhandled backend error:', err);
+  res.status(500).send({ message: 'An unexpected error occurred on the server.' });
+});
+
 app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+  console.log(`Server starting on port ${PORT}`);
 });
