@@ -1,1 +1,8 @@
-feat: Integrate Azure SQL Database and configure deployment
+feat: Convert backend to Azure Functions and update deployment workflow
+
+This commit converts the existing Node.js Express backend into Azure Functions to enable deployment with Azure Static Web Apps. It includes:
+- Creation of host.json and local.settings.json for Azure Functions configuration.
+- Creation of function.json for projects and stages API routes.
+- Refactoring of backend/index.js to act as the main Azure Function entry point.
+- Modification of backend/db.js for Azure SQL connection.
+- Update of Azure Static Web Apps workflow to build and deploy the Azure Functions.

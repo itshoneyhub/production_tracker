@@ -1,6 +1,6 @@
 const { poolPromise } = require('./db');
-const projectsRouter = require('./routes/projects');
-const stagesRouter = require('./routes/stages');
+const { getProjects, getProjectById, createProject, updateProject, deleteProject } = require('./routes/projects');
+const { getStages, getStageById, createStage, updateStage, deleteStage } = require('./routes/stages');
 
 module.exports = async function (context, req) {
     context.log('HTTP trigger function processed a request.');
@@ -11,12 +11,80 @@ module.exports = async function (context, req) {
         // Initialize poolPromise if not already initialized
         await poolPromise;
 
+        const method = req.method.toLowerCase();
+        const idMatch = urlPath.match(/\/([a-f0-9-]+)$/i); // Matches /<uuid>
+        const id = idMatch ? idMatch[1] : null;
+
+        const mockReq = {
+            body: req.body,
+            params: { id: id },
+            query: req.query,
+            url: urlPath,
+            method: req.method
+        };
+
+        const mockRes = {
+            status: function (statusCode) {
+                this.statusCode = statusCode;
+                return this;
+            },
+            send: function (body) {
+                this.body = body;
+                context.res = {
+                    status: this.statusCode || 200,
+                    body: this.body
+                };
+            },
+            json: function (body) {
+                this.body = body;
+                context.res = {
+                    status: this.statusCode || 200,
+                    body: this.body
+                };
+            }
+        };
+
         if (urlPath.startsWith('projects')) {
-            // Simulate Express-like routing for projects
-            await handleExpressRoute(projectsRouter, context, req, urlPath.substring('projects'.length));
+            if (id) {
+                if (method === 'get') {
+                    await getProjectById(mockReq, mockRes);
+                } else if (method === 'put') {
+                    await updateProject(mockReq, mockRes);
+                } else if (method === 'delete') {
+                    await deleteProject(mockReq, mockRes);
+                } else {
+                    mockRes.status(404).send('Not Found');
+                }
+            } else {
+                if (method === 'get') {
+                    await getProjects(mockReq, mockRes);
+                } else if (method === 'post') {
+                    await createProject(mockReq, mockRes);
+                } else {
+                    mockRes.status(404).send('Not Found');
+                }
+            }
         } else if (urlPath.startsWith('stages')) {
-            // Simulate Express-like routing for stages
-            await handleExpressRoute(stagesRouter, context, req, urlPath.substring('stages'.length));
+            if (id) {
+                if (method === 'get') {
+                    await getStageById(mockReq, mockRes);
+                } else if (method === 'put') {
+                    await updateStage(mockReq, mockRes);
+                } else if (method === 'delete') {
+                    await deleteStage(mockReq, mockRes);
+                } else {
+                    mockRes.status(404).send('Not Found');
+                }
+            } else {
+                if (method === 'get') {
+                    await getStages(mockReq, mockRes);
+                } else if (method === 'post') {
+                    await createStage(mockReq, mockRes);
+                } else {
+                    mockRes.status(404).send('Not Found');
+                }
+            }
+        } else if (urlPath.startsWith('test-db')) {
         } else if (urlPath.startsWith('test-db')) {
             // Handle test-db endpoint
             try {
@@ -48,66 +116,4 @@ module.exports = async function (context, req) {
     }
 };
 
-async function handleExpressRoute(router, context, req, subPath) {
-    // This is a simplified simulation. A full Express-like routing in Azure Functions
-    // would be more complex, potentially involving a custom Express app instance
-    // or a more robust routing library.
-    // For now, we'll manually match common HTTP methods and pass relevant data.
 
-    const method = req.method.toLowerCase();
-    const idMatch = subPath.match(/\/([a-f0-9-]+)$/i); // Matches /<uuid>
-    const id = idMatch ? idMatch[1] : null;
-
-    // Mock Express req and res objects
-    const mockReq = {
-        body: req.body,
-        params: { id: id },
-        query: req.query,
-        url: subPath, // Use subPath for internal routing
-        method: req.method
-    };
-
-    const mockRes = {
-        status: function (statusCode) {
-            this.statusCode = statusCode;
-            return this;
-        },
-        send: function (body) {
-            this.body = body;
-            context.res = {
-                status: this.statusCode || 200,
-                body: this.body
-            };
-        },
-        json: function (body) {
-            this.body = body;
-            context.res = {
-                status: this.statusCode || 200,
-                body: this.body
-            };
-        }
-    };
-
-    // Manually call the appropriate route handler based on method and path
-    if (id) {
-        // Routes with ID (e.g., GET /projects/{id}, PUT /projects/{id}, DELETE /projects/{id})
-        if (method === 'get' && router.get) {
-            await router.get(mockReq, mockRes);
-        } else if (method === 'put' && router.put) {
-            await router.put(mockReq, mockRes);
-        } else if (method === 'delete' && router.delete) {
-            await router.delete(mockReq, mockRes);
-        } else {
-            mockRes.status(404).send('Not Found');
-        }
-    } else {
-        // Routes without ID (e.g., GET /projects, POST /projects)
-        if (method === 'get' && router.get) {
-            await router.get(mockReq, mockRes);
-        } else if (method === 'post' && router.post) {
-            await router.post(mockReq, mockRes);
-        } else {
-            mockRes.status(404).send('Not Found');
-        }
-    }
-}

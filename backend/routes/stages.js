@@ -1,10 +1,9 @@
-const express = require('express');
-const router = express.Router();
+
 const { sql, poolPromise } = require('../db');
 const { v4: uuidv4 } = require('uuid');
 
 // GET all stages
-router.get('/', async (req, res) => {
+async function getStages(req, res) {
   try {
     const pool = await poolPromise;
     const result = await pool.request().query('SELECT * FROM Stages');
@@ -16,7 +15,7 @@ router.get('/', async (req, res) => {
 });
 
 // GET a single stage by ID
-router.get('/:id', async (req, res) => {
+async function getStageById(req, res) {
   try {
     const pool = await poolPromise;
     const result = await pool.request()
@@ -33,7 +32,7 @@ router.get('/:id', async (req, res) => {
 });
 
 // POST a new stage
-router.post('/', async (req, res) => {
+async function createStage(req, res) {
   const { name, remarks } = req.body;
   try {
     const pool = await poolPromise;
@@ -49,7 +48,7 @@ router.post('/', async (req, res) => {
 });
 
 // PUT (update) a stage
-router.put('/:id', async (req, res) => {
+async function updateStage(req, res) {
   const { name, remarks } = req.body;
   try {
     const pool = await poolPromise;
@@ -69,7 +68,7 @@ router.put('/:id', async (req, res) => {
 });
 
 // DELETE a stage
-router.delete('/:id', async (req, res) => {
+async function deleteStage(req, res) {
   try {
     const pool = await poolPromise;
     const result = await pool.request()
@@ -86,4 +85,10 @@ router.delete('/:id', async (req, res) => {
   }
 });
 
-module.exports = router;
+module.exports = {
+  getStages,
+  getStageById,
+  createStage,
+  updateStage,
+  deleteStage
+};

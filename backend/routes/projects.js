@@ -1,10 +1,9 @@
-const express = require('express');
-const router = express.Router();
+
 const { sql, poolPromise } = require('../db');
 const { v4: uuidv4 } = require('uuid');
 
 // GET all projects
-router.get('/', async (req, res) => {
+async function getProjects(req, res) {
   try {
     const pool = await poolPromise;
     const result = await pool.request().query('SELECT id, projectNo, projectName, customerName, owner, projectDate, targetDate, dispatchMonth, productionStage, remarks FROM Projects');
@@ -16,7 +15,7 @@ router.get('/', async (req, res) => {
 });
 
 // GET a single project by ID
-router.get('/:id', async (req, res) => {
+async function getProjectById(req, res) {
   try {
     const pool = await poolPromise;
     const result = await pool.request()
@@ -33,7 +32,7 @@ router.get('/:id', async (req, res) => {
 });
 
 // POST a new project
-router.post('/', async (req, res) => {
+async function createProject(req, res) {
   const { projectNo, projectName, customerName, owner, projectDate, targetDate, dispatchMonth, productionStage, remarks } = req.body;
   try {
     const parsedProjectDate = projectDate ? new Date(projectDate) : null;
@@ -58,7 +57,7 @@ router.post('/', async (req, res) => {
 });
 
 // PUT (update) a project
-router.put('/:id', async (req, res) => {
+async function updateProject(req, res) {
   const { projectNo, projectName, customerName, owner, projectDate, targetDate, dispatchMonth, productionStage, remarks } = req.body;
   try {
     const parsedProjectDate = projectDate ? new Date(projectDate) : null;
@@ -87,7 +86,7 @@ router.put('/:id', async (req, res) => {
 });
 
 // DELETE a project
-router.delete('/:id', async (req, res) => {
+async function deleteProject(req, res) {
   try {
     const pool = await poolPromise;
     const result = await pool.request()
@@ -103,4 +102,10 @@ router.delete('/:id', async (req, res) => {
   }
 });
 
-module.exports = router;
+module.exports = {
+  getProjects,
+  getProjectById,
+  createProject,
+  updateProject,
+  deleteProject
+};
