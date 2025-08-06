@@ -1,4 +1,5 @@
-fix: Add req.body validation to API routes
+feat: Migrate backend to PostgreSQL
 
-- Added checks for missing request body in create and update functions in projects.js and stages.js.
-- Returns 400 Bad Request if req.body is undefined.
+- Updated .env with PostgreSQL credentials.
+- Rewrote db.js to use pg client.
+- Modified projects.js and stages.js for PostgreSQL syntax and pg client usage.
