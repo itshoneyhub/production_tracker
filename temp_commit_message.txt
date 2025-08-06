@@ -1,3 +1,5 @@
-Fix: Add API location to Azure Static Web Apps workflow
+feat: Revert to Render integration
 
-Configured the 'api_location' in the Azure Static Web Apps workflow file to correctly deploy the backend API, resolving the 404 Not Found error for API endpoints.
+- Reverted backend/server.js to its original state.
+- Removed Azure Functions related files.
+- Reverted backend/.env for local Render testing.
