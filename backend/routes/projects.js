@@ -12,7 +12,7 @@ async function getProjects(req, res) {
     console.error('Error fetching projects:', err);
     res.status(500).send(err.message);
   }
-});
+}
 
 // GET a single project by ID
 async function getProjectById(req, res) {
@@ -29,7 +29,7 @@ async function getProjectById(req, res) {
   } catch (err) {
     res.status(500).send(err.message);
   }
-});
+}
 
 // POST a new project
 async function createProject(req, res) {
@@ -54,7 +54,7 @@ async function createProject(req, res) {
   } catch (err) {
     res.status(500).send(err.message);
   }
-});
+}
 
 // PUT (update) a project
 async function updateProject(req, res) {
@@ -83,7 +83,7 @@ async function updateProject(req, res) {
   } catch (err) {
     res.status(500).send(err.message);
   }
-});
+}
 
 // DELETE a project
 async function deleteProject(req, res) {
@@ -100,7 +100,7 @@ async function deleteProject(req, res) {
   } catch (err) {
     res.status(500).send(err.message);
   }
-});
+}
 
 module.exports = {
   getProjects,

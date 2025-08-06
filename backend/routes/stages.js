@@ -12,7 +12,7 @@ async function getStages(req, res) {
     console.error('Error fetching stages:', err);
     res.status(500).send(err.message);
   }
-});
+}
 
 // GET a single stage by ID
 async function getStageById(req, res) {
@@ -29,7 +29,7 @@ async function getStageById(req, res) {
   } catch (err) {
     res.status(500).send(err.message);
   }
-});
+}
 
 // POST a new stage
 async function createStage(req, res) {
@@ -45,7 +45,7 @@ async function createStage(req, res) {
   } catch (err) {
     res.status(500).send(err.message);
   }
-});
+}
 
 // PUT (update) a stage
 async function updateStage(req, res) {
@@ -65,7 +65,7 @@ async function updateStage(req, res) {
   } catch (err) {
     res.status(500).send(err.message);
   }
-});
+}
 
 // DELETE a stage
 async function deleteStage(req, res) {
@@ -83,7 +83,7 @@ async function deleteStage(req, res) {
   } catch (err) {
     res.status(500).send(err.message);
   }
-});
+}
 
 module.exports = {
   getStages,
