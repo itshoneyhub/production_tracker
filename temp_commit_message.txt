@@ -1,1 +1,3 @@
-fix: Remove api_location from Azure Static Web App workflow
+Fix: Add API location to Azure Static Web Apps workflow
+
+Configured the 'api_location' in the Azure Static Web Apps workflow file to correctly deploy the backend API, resolving the 404 Not Found error for API endpoints.

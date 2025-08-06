@@ -1,14 +1,17 @@
 const sql = require('mssql');
 require('dotenv').config();
 
+console.log('db.js is being loaded');
+
 const config = {
-  // user: process.env.AZURE_SQL_USER,
-  // password: process.env.AZURE_SQL_PASSWORD,
-  authentication: {
-    type: 'azure-active-directory-default'
-  },
+  user: process.env.AZURE_SQL_USER,
+  password: process.env.AZURE_SQL_PASSWORD,
   server: process.env.AZURE_SQL_SERVER,
+  port: parseInt(process.env.AZURE_SQL_PORT),
   database: process.env.AZURE_SQL_DATABASE,
+  authentication: {
+    type: 'default'
+  },
   options: {
     encrypt: true, // Use this if you're on Azure
     trustServerCertificate: false, // Change to true for local dev / self-signed certs
