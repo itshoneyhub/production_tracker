@@ -33,6 +33,9 @@ async function getStageById(req, res) {
 
 // POST a new stage
 async function createStage(req, res) {
+  if (!req.body) {
+    return res.status(400).send('Request body is missing.');
+  }
   const { name, remarks } = req.body;
   try {
     const pool = await poolPromise;
@@ -49,6 +52,9 @@ async function createStage(req, res) {
 
 // PUT (update) a stage
 async function updateStage(req, res) {
+  if (!req.body) {
+    return res.status(400).send('Request body is missing.');
+  }
   const { name, remarks } = req.body;
   try {
     const pool = await poolPromise;

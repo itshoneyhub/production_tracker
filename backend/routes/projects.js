@@ -33,6 +33,9 @@ async function getProjectById(req, res) {
 
 // POST a new project
 async function createProject(req, res) {
+  if (!req.body) {
+    return res.status(400).send('Request body is missing.');
+  }
   const { projectNo, projectName, customerName, owner, projectDate, targetDate, dispatchMonth, productionStage, remarks } = req.body;
   try {
     const parsedProjectDate = projectDate ? new Date(projectDate) : null;
@@ -58,6 +61,9 @@ async function createProject(req, res) {
 
 // PUT (update) a project
 async function updateProject(req, res) {
+  if (!req.body) {
+    return res.status(400).send('Request body is missing.');
+  }
   const { projectNo, projectName, customerName, owner, projectDate, targetDate, dispatchMonth, productionStage, remarks } = req.body;
   try {
     const parsedProjectDate = projectDate ? new Date(projectDate) : null;
