@@ -1,13 +1,11 @@
-
-const { sql, poolPromise } = require('../db');
+const { query } = require('../db');
 const { v4: uuidv4 } = require('uuid');
 
 // GET all stages
 async function getStages(req, res) {
   try {
-    const pool = await poolPromise;
-    const result = await pool.request().query('SELECT * FROM Stages');
-    res.json(result.recordset);
+    const result = await query('SELECT * FROM Stages');
+    res.json(result.rows);
   } catch (err) {
     console.error('Error fetching stages:', err);
     res.status(500).send(err.message);
@@ -17,12 +15,9 @@ async function getStages(req, res) {
 // GET a single stage by ID
 async function getStageById(req, res) {
   try {
-    const pool = await poolPromise;
-    const result = await pool.request()
-      .input('id', sql.UniqueIdentifier, req.params.id)
-      .query('SELECT * FROM Stages WHERE id = @id');
-    if (result.recordset.length > 0) {
-      res.json(result.recordset[0]);
+    const result = await query('SELECT * FROM Stages WHERE id = $1', [req.params.id]);
+    if (result.rows.length > 0) {
+      res.json(result.rows[0]);
     } else {
       res.status(404).send('Stage not found');
     }
@@ -38,12 +33,8 @@ async function createStage(req, res) {
   }
   const { name, remarks } = req.body;
   try {
-    const pool = await poolPromise;
-    await pool.request()
-      .input('id', sql.UniqueIdentifier, req.body.id || uuidv4())
-      .input('name', sql.NVarChar, name)
-      .input('remarks', sql.NVarChar, remarks)
-      .query('INSERT INTO Stages (id, name, remarks) VALUES (@id, @name, @remarks)');
+    const id = req.body.id || uuidv4();
+    await query('INSERT INTO Stages (id, name, remarks) VALUES ($1, $2, $3)', [id, name, remarks]);
     res.status(201).send('Stage created');
   } catch (err) {
     res.status(500).send(err.message);
@@ -57,13 +48,8 @@ async function updateStage(req, res) {
   }
   const { name, remarks } = req.body;
   try {
-    const pool = await poolPromise;
-    const result = await pool.request()
-      .input('id', sql.UniqueIdentifier, req.params.id)
-      .input('name', sql.NVarChar, name)
-      .input('remarks', sql.NVarChar, remarks)
-      .query('UPDATE Stages SET name = @name, remarks = @remarks WHERE id = @id');
-    if (result.rowsAffected[0] > 0) {
+    const result = await query('UPDATE Stages SET name = $1, remarks = $2 WHERE id = $3', [name, remarks, req.params.id]);
+    if (result.rowCount > 0) {
       res.send('Stage updated');
     } else {
       res.status(404).send('Stage not found');
@@ -76,11 +62,8 @@ async function updateStage(req, res) {
 // DELETE a stage
 async function deleteStage(req, res) {
   try {
-    const pool = await poolPromise;
-    const result = await pool.request()
-      .input('id', sql.UniqueIdentifier, req.params.id)
-      .query('DELETE FROM Stages WHERE id = @id');
-    if (result.rowsAffected[0] > 0) {
+    const result = await query('DELETE FROM Stages WHERE id = $1', [req.params.id]);
+    if (result.rowCount > 0) {
       res.send('Stage deleted');
     }
     else {

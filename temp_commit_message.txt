@@ -1,5 +1,4 @@
-feat: Revert to Render integration
+fix: Add req.body validation to API routes
 
-- Reverted backend/server.js to its original state.
-- Removed Azure Functions related files.
-- Reverted backend/.env for local Render testing.
+- Added checks for missing request body in create and update functions in projects.js and stages.js.
+- Returns 400 Bad Request if req.body is undefined.
